@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="af9c2e45-1cea-4a0a-9c07-f16c3f33c005" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/android/src/main/kotlin/dev/flutterbr/opentok_flutter/CameraPermissions.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/android/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/dev/flutterbr/opentok_flutter/OpentokFlutterPlugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/kotlin/dev/flutterbr/opentok_flutter/OpenTokFlutterPlugin.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/android/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/example/android/app/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/android/app/src/main/kotlin/dev/flutterbr/opentok_flutter_example/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/example/android/app/src/main/kotlin/dev/flutterbr/opentok_flutter_example/MainActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/android/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/example/android/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/android/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/example/android/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Classes/OpentokFlutterPlugin.h" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/OpentokFlutterPlugin.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Classes/OpentokFlutterPlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/OpentokFlutterPlugin.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Classes/SwiftOpentokFlutterPlugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/SwiftOpentokFlutterPlugin.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/opentok_flutter.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/opentok_flutter.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/opentok_flutter_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/opentok_flutter_test.dart" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="Pixel_2_API_29" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1g3NB8OcwQECUbjpgDVz4tHZUUS" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="dart.analysis.tool.window.force.activate" value="false" />
+    <property name="io.flutter.reload.alreadyRun" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="show.migrate.to.gradle.popup" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="af9c2e45-1cea-4a0a-9c07-f16c3f33c005" name="Default Changelist" comment="" />
+      <created>1597339180245</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1597339180245</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state width="1860" height="316" key="GridCell.Tab.0.bottom" timestamp="1597360580126">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1860" height="316" key="GridCell.Tab.0.bottom/0.0.1920.1050@0.0.1920.1050" timestamp="1597360580126" />
+    <state width="1860" height="316" key="GridCell.Tab.0.center" timestamp="1597360580126">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1860" height="316" key="GridCell.Tab.0.center/0.0.1920.1050@0.0.1920.1050" timestamp="1597360580126" />
+    <state width="1860" height="316" key="GridCell.Tab.0.left" timestamp="1597360580126">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1860" height="316" key="GridCell.Tab.0.left/0.0.1920.1050@0.0.1920.1050" timestamp="1597360580126" />
+    <state width="1860" height="316" key="GridCell.Tab.0.right" timestamp="1597360580126">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1860" height="316" key="GridCell.Tab.0.right/0.0.1920.1050@0.0.1920.1050" timestamp="1597360580126" />
+  </component>
+</project>
