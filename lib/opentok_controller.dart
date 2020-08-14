@@ -51,6 +51,16 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
     return result;
   }
 
+  Future<void> disconnect() async {
+    await _channel.invokeMethod('disconnect');
+
+    value = value.copyWith(isConnected: false);
+  }
+
+  Future<void> destroy() async {
+    await _channel.invokeMethod('destroy');
+  }
+
   /// Destroys the instance and releases all resources used by the OpenTok SDK.
   ///
   /// This method is useful for apps that occasionally make voice or video calls, to free up resources for other operations when not making calls.
@@ -58,7 +68,8 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
   @override
   Future<void> dispose() async {
     _removeMethodCallHandler();
-    await _channel.invokeMethod('destroy');
+    await disconnect();
+    await destroy();
     super.dispose();
   }
 
