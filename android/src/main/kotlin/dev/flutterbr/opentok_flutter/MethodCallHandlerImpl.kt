@@ -47,7 +47,7 @@ class MethodCallHandlerImpl(private var activity: Activity,
                         publisherSettings = publisherArg.let { Json.parse(PublisherSettings.serializer(), it) }
                     } catch (e: Exception) {
                         if (loggingEnabled) {
-                            Log.d("[MethodCallHandlerImpl]","OpenTok publisher settings error: ${e.message}")
+                            Log.d("[MethodCallHandlerImpl]", "OpenTok publisher settings error: ${e.message}")
                         }
                     }
 
@@ -57,11 +57,11 @@ class MethodCallHandlerImpl(private var activity: Activity,
                         }
                     } catch (e: Exception) {
                         if (loggingEnabled) {
-                            Log.d("[MethodCallHandlerImpl]","OpenTok subscriber settings error: ${e.message}")
+                            Log.d("[MethodCallHandlerImpl]", "OpenTok subscriber settings error: ${e.message}")
                         }
                     }
 
-                    provider = VoIPProvider(activity.applicationContext, publisherSettings, subscriberSettings,this, loggingEnabled)
+                    provider = VoIPProvider(activity.applicationContext, publisherSettings, subscriberSettings, this, loggingEnabled)
                     result.success(true)
                 } catch (ex: Exception) {
                     result.success(false)
@@ -76,41 +76,78 @@ class MethodCallHandlerImpl(private var activity: Activity,
                     result.success(false)
                 }
             }
-            "destroy" -> {
-                provider?.disconnect()
-                result.success(null)
+            "disconnect" -> {
+                try {
+                    provider?.disconnect()
+                    result.success(true)
+                } catch (ex: Exception) {
+                    result.success(false)
+                }
             }
             "enablePublisherVideo" -> {
-                provider?.enablePublisherVideo()
-                result.success(null)
+                try {
+                    provider?.enablePublisherVideo()
+                    result.success(true)
+                } catch (ex: Exception) {
+                    result.success(false)
+                }
+
             }
             "disablePublisherVideo" -> {
-                provider?.disablePublisherVideo()
-                result.success(null)
+                try {
+                    provider?.disablePublisherVideo()
+                    result.success(true)
+                } catch (ex: Exception) {
+                    result.success(false)
+                }
             }
             "unmutePublisherAudio" -> {
-                provider?.unmutePublisherAudio()
-                result.success(null)
+                try {
+                    provider?.unmutePublisherAudio()
+                    result.success(true)
+                } catch (ex: Exception) {
+                    result.success(false)
+                }
             }
             "mutePublisherAudio" -> {
-                provider?.mutePublisherAudio()
-                result.success(null)
+                try {
+                    provider?.mutePublisherAudio()
+                    result.success(true)
+                } catch (ex: Exception) {
+                    result.success(false)
+                }
             }
             "muteSubscriberAudio" -> {
-                provider?.muteSubscriberAudio()
-                result.success(null)
+                try {
+                    provider?.muteSubscriberAudio()
+                    result.success(true)
+                } catch (ex: Exception) {
+                    result.success(false)
+                }
             }
             "unmuteSubscriberAudio" -> {
-                provider?.unmuteSubscriberAudio()
-                result.success(null)
+                try {
+                    provider?.unmuteSubscriberAudio()
+                    result.success(true)
+                } catch (ex: Exception) {
+                    result.success(false)
+                }
             }
             "switchAudioToSpeaker" -> {
-                configureAudioSession(true)
-                result.success(null)
+                try {
+                    configureAudioSession(true)
+                    result.success(true)
+                } catch (ex: Exception) {
+                    result.success(false)
+                }
             }
             "switchAudioToReceiver" -> {
-                configureAudioSession(false)
-                result.success(null)
+                try {
+                    configureAudioSession(false)
+                    result.success(true)
+                } catch (ex: Exception) {
+                    result.success(false)
+                }
             }
             "switchCamera" -> {
                 try {
