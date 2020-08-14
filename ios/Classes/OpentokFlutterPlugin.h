@@ -1,4 +1,4 @@
 #import <Flutter/Flutter.h>
 
-@interface OpentokFlutterPlugin : NSObject<FlutterPlugin>
+@interface OpenTokFlutterPlugin : NSObject<FlutterPlugin>
 @end

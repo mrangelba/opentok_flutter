@@ -1,4 +1,4 @@
-#import "OpentokFlutterPlugin.h"
+#import "OpenTokFlutterPlugin.h"
 #if __has_include(<opentok_flutter/opentok_flutter-Swift.h>)
 #import <opentok_flutter/opentok_flutter-Swift.h>
 #else
@@ -8,8 +8,8 @@
 #import "opentok_flutter-Swift.h"
 #endif
 
-@implementation OpentokFlutterPlugin
+@implementation OpenTokFlutterPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftOpentokFlutterPlugin registerWithRegistrar:registrar];
+  [SwiftOpenTokFlutterPlugin registerWithRegistrar:registrar];
 }
 @end

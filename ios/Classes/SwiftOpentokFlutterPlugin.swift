@@ -1,10 +1,10 @@
 import Flutter
 import UIKit
 
-public class SwiftOpentokFlutterPlugin: NSObject, FlutterPlugin {
+public class SwiftOpenTokFlutterPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "opentok_flutter", binaryMessenger: registrar.messenger())
-    let instance = SwiftOpentokFlutterPlugin()
+    let instance = SwiftOpenTokFlutterPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
