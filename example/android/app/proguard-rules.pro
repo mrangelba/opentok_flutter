@@ -1,0 +1,2 @@
+-keep class com.opentok.** { *; }
+-keep class org.otwebrtc.** { *; }
