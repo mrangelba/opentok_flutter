@@ -2,13 +2,9 @@ import Flutter
 import UIKit
 
 public class SwiftOpenTokFlutterPlugin: NSObject, FlutterPlugin {
-  public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "opentok_flutter", binaryMessenger: registrar.messenger())
-    let instance = SwiftOpenTokFlutterPlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
-  }
+    public static func register(with registrar: FlutterPluginRegistrar) {
+        let publisherViewFactory = PublisherViewFactory(registrar: registrar)
 
-  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    result("iOS " + UIDevice.current.systemVersion)
-  }
+        registrar.register(publisherViewFactory as FlutterPlatformViewFactory, withId: "plugins.flutterbr.dev/opentok_flutter/publisher_view")
+    }
 }
