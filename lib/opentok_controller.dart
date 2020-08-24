@@ -65,8 +65,10 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
   /// Once the app calls destroy to destroy the created instance, you cannot use any method or callback in the SDK.
   @override
   Future<void> dispose() async {
-    _removeMethodCallHandler();
     await disconnect();
+
+    _removeMethodCallHandler();
+
     super.dispose();
   }
 
