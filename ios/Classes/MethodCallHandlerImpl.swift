@@ -39,6 +39,7 @@ public class MethodCallHandlerImpl{
             if let methodArgs = args as? [String: Any] {
                 let publisherArg = methodArgs["publisherSettings"] as! String
                 let subscriberArg = methodArgs["subscriberSettings"] as? String
+                self.loggingEnabled = methodArgs["loggingEnabled"] as? Bool
                 
                 do {
                     let jsonDecoder = JSONDecoder()
