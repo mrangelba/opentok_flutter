@@ -74,7 +74,7 @@ public class MethodCallHandlerImpl{
             } catch {
                 result(false)
             }
-        } else if call.method == "destroy" {
+        } else if call.method == "disconnect" {
             do {
                 try provider?.disconnect()
                 result(true)
