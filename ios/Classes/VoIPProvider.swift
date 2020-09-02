@@ -41,14 +41,14 @@ public class VoIPProvider: NSObject {
 
     deinit {
         if self.loggingEnabled {
-            os_log("[DEINIT] OpenTokVoIPImpl", type: .info)
+            os_log("[VoIPProvider][DEINIT] OpenTokVoIPImpl", type: .info)
         }
     }
 
     private func process(error err: OTError?) {
         if let e = err {
             if self.loggingEnabled {
-                os_log("[OTSubscriberDelegate] %s", type: .info, e.localizedDescription)
+                os_log("[VoIPProvider] %s", type: .info, e.localizedDescription)
             }
         }
     }
@@ -57,10 +57,10 @@ public class VoIPProvider: NSObject {
         channel?.channelInvokeMethod("onWillConnect", arguments: nil)
         
         if self.loggingEnabled {
-            os_log("[OpenTokVoIPImpl] Create OTSession", type: .info)
-            os_log("[OpenTokVoIPImpl] API key: %s", type: .info, apiKey)
-            os_log("[OpenTokVoIPImpl] Session ID: %s", type: .info, sessionId)
-            os_log("[OpenTokVoIPImpl] Token: %s", type: .info, token)
+            os_log("[VoIPProvider] Create OTSession", type: .info)
+            os_log("[VoIPProvider] API key: %s", type: .info, apiKey)
+            os_log("[VoIPProvider] Session ID: %s", type: .info, sessionId)
+            os_log("[VoIPProvider] Token: %s", type: .info, token)
         }
 
         if apiKey == "" || sessionId == "" || token == "" {
@@ -84,7 +84,7 @@ public class VoIPProvider: NSObject {
 
     func mutePublisherAudio() throws {
         if self.loggingEnabled {
-            os_log("[OpenTokVoIPImpl] Enable publisher audio", type: .info)
+            os_log("[VoIPProvider] Enable publisher audio", type: .info)
         }
 
         if publisher != nil {
@@ -96,7 +96,7 @@ public class VoIPProvider: NSObject {
 
     func unmutePublisherAudio() throws {
         if self.loggingEnabled {
-            os_log("[OpenTokVoIPImpl] Unmute publisher audio", type: .info)
+            os_log("[VoIPProvider] Unmute publisher audio", type: .info)
         }
 
         if publisher != nil {
@@ -108,7 +108,7 @@ public class VoIPProvider: NSObject {
 
     func muteSubscriberAudio() throws {
         if self.loggingEnabled {
-            os_log("[OpenTokVoIPImpl] Mute subscriber audio", type: .info)
+            os_log("[VoIPProvider] Mute subscriber audio", type: .info)
         }
 
         if subscriber != nil {
@@ -118,7 +118,7 @@ public class VoIPProvider: NSObject {
 
     func unmuteSubscriberAudio() throws {
         if self.loggingEnabled {
-            os_log("[OpenTokVoIPImpl] Unmute subscriber audio", type: .info)
+            os_log("[VoIPProvider] Unmute subscriber audio", type: .info)
         }
 
         if subscriber != nil {
@@ -128,7 +128,7 @@ public class VoIPProvider: NSObject {
 
     func enablePublisherVideo() throws {
         if self.loggingEnabled {
-            os_log("[OpenTokVoIPImpl] Enable publisher video", type: .info)
+            os_log("[VoIPProvider] Enable publisher video", type: .info)
         }
 
         if publisher != nil {
@@ -142,7 +142,7 @@ public class VoIPProvider: NSObject {
 
     func disablePublisherVideo() throws {
         if self.loggingEnabled {
-            os_log("[OpenTokVoIPImpl] Disable publisher video", type: .info)
+            os_log("[VoIPProvider] Disable publisher video", type: .info)
         }
 
         if publisher != nil {
@@ -154,7 +154,7 @@ public class VoIPProvider: NSObject {
     
     func switchCamera() throws {
         if self.loggingEnabled {
-            os_log("[OpenTokVoIPImpl] Switch camera", type: .info)
+            os_log("[VoIPProvider] Switch camera", type: .info)
         }
         if publisher.cameraPosition == .front {
             publisher.cameraPosition = .back
@@ -167,8 +167,8 @@ public class VoIPProvider: NSObject {
 
 private extension VoIPProvider {
     func publish() {
-        if self.loggingEnabled {
-            os_log("[OpenTokVoIPImpl] Publish", type: .info)
+        if self. {
+            os_log("[VoIPProvider] Publish", type: .info)
         }
 
         let settings = OTPublisherSettings()
@@ -201,7 +201,7 @@ private extension VoIPProvider {
         }
         
         if self.loggingEnabled {
-            os_log("[OpenTokVoIPImpl] Settings: %@", type: .info, settings.description)
+            os_log("[VoIPProvider] Settings: %@", type: .info, settings.description)
         }
         
         publisher = OTPublisher(delegate: self, settings: settings)
@@ -223,7 +223,7 @@ private extension VoIPProvider {
 
         guard error == nil else {
             if self.loggingEnabled {
-                os_log("[OpenTokVoIPImpl] %s", type: .info, error.debugDescription)
+                os_log("[VoIPProvider] %s", type: .info, error.debugDescription)
             }
             return
         }
@@ -232,7 +232,7 @@ private extension VoIPProvider {
     func unpublish() {
         if publisher != nil {
             if self.loggingEnabled {
-                os_log("[OpenTokVoIPImpl] Unpublish")
+                os_log("[VoIPProvider] Unpublish")
             }
 
             session.unpublish(publisher, error: nil)
@@ -242,7 +242,7 @@ private extension VoIPProvider {
 
     func subscribe(toStream stream: OTStream) {
         if self.loggingEnabled {
-            os_log("[OpenTokVoIPImpl] Subscribe to stream %s", type: .info, stream.name ?? "<No stream name>")
+            os_log("[VoIPProvider] Subscribe to stream %s", type: .info, stream.name ?? "<No stream name>")
         }
 
         subscriber = OTSubscriber(stream: stream, delegate: self)
@@ -259,7 +259,7 @@ private extension VoIPProvider {
     func unsubscribe() {
         if subscriber != nil {
             if self.loggingEnabled {
-                os_log("[OpenTokVoIPImpl] Unsubscribe")
+                os_log("[VoIPProvider] Unsubscribe")
             }
 
             session.unsubscribe(subscriber, error: nil)
@@ -275,18 +275,18 @@ private extension VoIPProvider {
 
 extension VoIPProvider: OTSessionDelegate {
     public func sessionDidConnect(_: OTSession) {
-        os_log("[OTSubscriberDelegate] %s", type: .info, #function)
+        os_log("[OTSessionDelegate] %s", type: .info, #function)
         publish()
         
         channel?.channelInvokeMethod("onSessionConnected", arguments: nil)
     }
 
     public func sessionDidReconnect(_: OTSession) {
-        os_log("[OTSubscriberDelegate] %s", type: .info, #function)
+        os_log("[OTSessionDelegate] %s", type: .info, #function)
     }
 
     public func sessionDidDisconnect(_: OTSession) {
-        os_log("[OTSubscriberDelegate] %s", type: .info, #function)
+        os_log("[OTSessionDelegate] %s", type: .info, #function)
 
         unsubscribe()
         unpublish()
@@ -301,17 +301,17 @@ extension VoIPProvider: OTSessionDelegate {
     }
 
     public func sessionDidBeginReconnecting(_: OTSession) {
-        os_log("[OTSubscriberDelegate] %s", type: .info, #function)
+        os_log("[OTSessionDelegate] %s", type: .info, #function)
     }
 
     public func session(_: OTSession, didFailWithError error: OTError) {
-        os_log("[OTSubscriberDelegate] %s %s", type: .info, #function, error)
+        os_log("[OTSessionDelegate] %s %s", type: .info, #function, error)
         
         channel?.channelInvokeMethod("onSessionError", arguments: nil)
     }
 
     public func session(_: OTSession, streamCreated stream: OTStream) {
-        os_log("[OTSubscriberDelegate] %s", type: .info, #function)
+        os_log("[OTSessionDelegate] %s", type: .info, #function)
 
         subscribe(toStream: stream)
 
@@ -322,17 +322,17 @@ extension VoIPProvider: OTSessionDelegate {
     }
 
     public func session(_: OTSession, streamDestroyed stream: OTStream) {
-        os_log("[OTSubscriberDelegate] %s", type: .info, #function)
+        os_log("[OTSessionDelegate] %s", type: .info, #function)
         unsubscribe()
         channel?.channelInvokeMethod("onSessionStreamDropped", arguments: nil)
     }
 
     public func session(_: OTSession, connectionCreated connection: OTConnection) {
-        os_log("[OTSubscriberDelegate] %s", type: .info, #function)
+        os_log("[OTSessionDelegate] %s", type: .info, #function)
     }
 
     public func session(_: OTSession, connectionDestroyed connection: OTConnection) {
-        os_log("[OTSubscriberDelegate] %s", type: .info, #function)
+        os_log("[OTSessionDelegate] %s", type: .info, #function)
 
         do {
             try self.disconnect()
@@ -340,13 +340,13 @@ extension VoIPProvider: OTSessionDelegate {
     }
 
     public func session(_: OTSession, receivedSignalType type: String?, from connection: OTConnection?, with string: String?) {
-        os_log("[OTSubscriberDelegate] %s %s %s %s", type: .info, #function, type ?? "<No signal type>", connection ?? "<Nil connection>", string ?? "<No string>")
+        os_log("[OTSessionDelegate] %s %s %s %s", type: .info, #function, type ?? "<No signal type>", connection ?? "<Nil connection>", string ?? "<No string>")
     }
 }
 
 extension VoIPProvider: OTPublisherDelegate {
     public func publisher(_: OTPublisherKit, streamCreated stream: OTStream) {
-        os_log("[OTSubscriberDelegate] %s", type: .info, #function)
+        os_log("[OTPublisherDelegate] %s", type: .info, #function)
 
         channel?.channelInvokeMethod("onPublisherStreamCreated", arguments: nil)
         
@@ -360,7 +360,7 @@ extension VoIPProvider: OTPublisherDelegate {
     }
 
     public func publisher(_: OTPublisherKit, streamDestroyed stream: OTStream) {
-        os_log("[OTSubscriberDelegate] %s", type: .info, #function)
+        os_log("[OTPublisherDelegate] %s", type: .info, #function)
         
         channel?.channelInvokeMethod("onPublisherStreamDestroyed", arguments: nil)
         channel?.channelInvokeMethod("onPublisherVideoStopped", arguments: nil)
@@ -370,13 +370,13 @@ extension VoIPProvider: OTPublisherDelegate {
     }
 
     public func publisher(_: OTPublisherKit, didFailWithError error: OTError) {
-        os_log("[OTSubscriberDelegate] %s %s", type: .info, #function, error.description)
+        os_log("[OTPublisherDelegate] %s %s", type: .info, #function, error.description)
         
         channel?.channelInvokeMethod("onPublisherError", arguments: nil)
     }
 
     public func publisher(_: OTPublisher, didChangeCameraPosition position: AVCaptureDevice.Position) {
-        os_log("[OTSubscriberDelegate] %s %d", type: .info, #function, position.rawValue)
+        os_log("[OTPublisherDelegate] %s %d", type: .info, #function, position.rawValue)
     }
 }
 
