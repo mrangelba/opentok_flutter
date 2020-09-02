@@ -167,7 +167,7 @@ public class VoIPProvider: NSObject {
 
 private extension VoIPProvider {
     func publish() {
-        if self. {
+        if self.loggingEnabled {
             os_log("[VoIPProvider] Publish", type: .info)
         }
 
