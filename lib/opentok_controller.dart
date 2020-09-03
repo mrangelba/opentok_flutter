@@ -27,36 +27,49 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
     @required PublisherKitSettings publisherSettings,
     SubscriberKitSettings subscriberSettings,
   }) async {
-    var result = await _channel.invokeMethod('initialize', {
-      'apiKey': apiKey,
-      'sessionId': sessionId,
-      'token': token,
-      'subscriberSettings': subscriberSettings == null
-          ? null
-          : jsonEncode(subscriberSettings.toJson()),
-      'publisherSettings': jsonEncode(publisherSettings.toJson()),
-      'loggingEnabled': true,
-    });
+    try {
+      var result = await _channel.invokeMethod('initialize', {
+        'apiKey': apiKey,
+        'sessionId': sessionId,
+        'token': token,
+        'subscriberSettings': subscriberSettings == null
+            ? null
+            : jsonEncode(subscriberSettings.toJson()),
+        'publisherSettings': jsonEncode(publisherSettings.toJson()),
+        'loggingEnabled': true,
+      });
 
-    value = value.copyWith(isInitialized: result);
-
-    return result;
+      value = value.copyWith(isInitialized: result);
+      return result;
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<bool> connect() async {
-    var result = await _channel.invokeMethod('connect');
+    try {
+      var result = await _channel.invokeMethod('connect');
 
-    value = value.copyWith(isConnected: result);
+      value = value.copyWith(isConnected: result);
 
-    return result;
+      return result;
+    } catch (e) {
+      print(e);
+      return false;
+    }
   }
 
   Future<bool> disconnect() async {
-    var result = await _channel.invokeMethod('disconnect');
+    try {
+      var result = await _channel.invokeMethod('disconnect');
 
-    value = value.copyWith(isConnected: false);
+      value = value.copyWith(isConnected: false);
 
-    return result;
+      return result;
+    } catch (e) {
+      print(e);
+      return false;
+    }
   }
 
   /// Destroys the instance and releases all resources used by the OpenTok SDK.
@@ -65,9 +78,13 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
   /// Once the app calls destroy to destroy the created instance, you cannot use any method or callback in the SDK.
   @override
   Future<void> dispose() async {
-    await disconnect();
+    try {
+      await disconnect();
 
-    _removeMethodCallHandler();
+      _removeMethodCallHandler();
+    } catch (e) {
+      print(e);
+    }
 
     super.dispose();
   }
@@ -76,54 +93,108 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
   ///
   /// The audio module is enabled by default.
   Future<bool> unmutePublisherAudio() async {
-    return await _channel.invokeMethod('unmutePublisherAudio');
+    try {
+      return await _channel.invokeMethod('unmutePublisherAudio');
+    } catch (e) {
+      print(e);
+
+      return false;
+    }
   }
 
   /// Mute the publisher audio module.
   ///
   /// The audio module is enabled by default.
   Future<bool> mutePublisherAudio() async {
-    return await _channel.invokeMethod('mutePublisherAudio');
+    try {
+      return await _channel.invokeMethod('mutePublisherAudio');
+    } catch (e) {
+      print(e);
+
+      return false;
+    }
   }
 
   /// Enables the subscriber video module.
   ///
   /// The audio module is enabled by default.
   Future<bool> enablePublisherVideo() async {
-    return await _channel.invokeMethod('enablePublisherVideo');
+    try {
+      return await _channel.invokeMethod('enablePublisherVideo');
+    } catch (e) {
+      print(e);
+
+      return false;
+    }
   }
 
   /// Disables the publishers video module.
   ///
   /// The audio module is enabled by default.
   Future<bool> disablePublisherVideo() async {
-    return await _channel.invokeMethod('disablePublisherVideo');
+    try {
+      return await _channel.invokeMethod('disablePublisherVideo');
+    } catch (e) {
+      print(e);
+
+      return false;
+    }
   }
 
   /// Disables the subscribers audio.
   Future<bool> muteSubscriberAudio() async {
-    return await _channel.invokeMethod('muteSubscriberAudio');
+    try {
+      return await _channel.invokeMethod('muteSubscriberAudio');
+    } catch (e) {
+      print(e);
+
+      return false;
+    }
   }
 
   /// Enables the subscribers audio.
   Future<bool> unmuteSubscriberAudio() async {
-    return await _channel.invokeMethod('unmuteSubscriberAudio');
+    try {
+      return await _channel.invokeMethod('unmuteSubscriberAudio');
+    } catch (e) {
+      print(e);
+
+      return false;
+    }
   }
 
   /// Switch the audio output to use speakers
   Future<bool> switchAudioToSpeaker() async {
-    return await _channel.invokeMethod("switchAudioToSpeaker");
+    try {
+      return await _channel.invokeMethod("switchAudioToSpeaker");
+    } catch (e) {
+      print(e);
+
+      return false;
+    }
   }
 
   /// Switch the audio output to use phone
   Future<bool> switchAudioToPhone() async {
-    return await _channel.invokeMethod("switchAudioToReceiver");
+    try {
+      return await _channel.invokeMethod("switchAudioToReceiver");
+    } catch (e) {
+      print(e);
+
+      return false;
+    }
   }
 
   // Camera Control
   /// Switches between front and rear cameras.
   Future<bool> switchCamera() async {
-    return await _channel.invokeMethod('switchCamera');
+    try {
+      return await _channel.invokeMethod('switchCamera');
+    } catch (e) {
+      print(e);
+
+      return false;
+    }
   }
 
   VoidCallback onWillConnect;
