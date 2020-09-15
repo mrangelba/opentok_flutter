@@ -144,7 +144,7 @@ class VoIPProvider(
         if (loggingEnabled) {
             Log.d("[VOIPProvider]", "[SessionListener] onStreamDropped")
         }
-        unsubscribe()
+        
         channel.channelInvokeMethod("onSessionStreamDropped", null)
     }
 
@@ -228,9 +228,7 @@ class VoIPProvider(
             Log.d("[VOIPProvider]", "[SubscriberListener] onDisconnected")
         }
 
-        channel.channelInvokeMethod("onSubscriberDisconnected", null)
-        channel.channelInvokeMethod("onSubscriberVideoStopped", null)
-        channel.channelInvokeMethod("onSubscriberAudioStopped", null)
+        unsubscribe()
     }
 
     override fun onError(p0: SubscriberKit?, error: OpentokError?) {

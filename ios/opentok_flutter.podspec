@@ -5,7 +5,7 @@
 require 'yaml'
 pubspec = YAML.load_file(File.join('..', 'pubspec.yaml'))
 libraryVersion = pubspec['version'].gsub('+', '-')
-openTokLibraryVersion = '2.17.1'
+openTokLibraryVersion = '2.18.0'
 
 Pod::Spec.new do |s|
   s.name             = 'opentok_flutter'

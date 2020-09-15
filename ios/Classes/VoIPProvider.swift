@@ -323,7 +323,7 @@ extension VoIPProvider: OTSessionDelegate {
 
     public func session(_: OTSession, streamDestroyed stream: OTStream) {
         os_log("[OTSessionDelegate] %s", type: .info, #function)
-        unsubscribe()
+        
         channel?.channelInvokeMethod("onSessionStreamDropped", arguments: nil)
     }
 
