@@ -262,11 +262,11 @@ private extension VoIPProvider {
                 os_log("[VoIPProvider] Unsubscribe")
             }
 
-            session.unsubscribe(subscriber, error: nil)
-            
-            channel?.channelInvokeMethod("onSubscriberDisconnected", arguments: nil)
             channel?.channelInvokeMethod("onSubscriberVideoStopped", arguments: nil)
             channel?.channelInvokeMethod("onSubscriberAudioStopped", arguments: nil)
+
+            session.unsubscribe(subscriber, error: nil)
+            
             subscriber = nil
         }
     }
@@ -405,6 +405,8 @@ extension VoIPProvider: OTSubscriberDelegate {
         }
         
         unsubscribe()
+                
+        channel?.channelInvokeMethod("onSubscriberDisconnected", arguments: nil)
     }
 
     public func subscriber(_: OTSubscriberKit, didFailWithError error: OTError) {
