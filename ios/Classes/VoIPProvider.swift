@@ -333,10 +333,6 @@ extension VoIPProvider: OTSessionDelegate {
 
     public func session(_: OTSession, connectionDestroyed connection: OTConnection) {
         os_log("[OTSessionDelegate] %s", type: .info, #function)
-
-        do {
-            try self.disconnect()
-        } catch{ }
     }
 
     public func session(_: OTSession, receivedSignalType type: String?, from connection: OTConnection?, with string: String?) {
