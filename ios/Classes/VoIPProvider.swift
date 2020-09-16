@@ -262,6 +262,7 @@ private extension VoIPProvider {
                 os_log("[VoIPProvider] Unsubscribe")
             }
 
+            channel?.channelInvokeMethod("onSubscriberDisconnected", arguments: nil)
             channel?.channelInvokeMethod("onSubscriberVideoStopped", arguments: nil)
             channel?.channelInvokeMethod("onSubscriberAudioStopped", arguments: nil)
 
@@ -323,6 +324,8 @@ extension VoIPProvider: OTSessionDelegate {
 
     public func session(_: OTSession, streamDestroyed stream: OTStream) {
         os_log("[OTSessionDelegate] %s", type: .info, #function)
+
+        unsubscribe()
         
         channel?.channelInvokeMethod("onSessionStreamDropped", arguments: nil)
     }
@@ -405,8 +408,6 @@ extension VoIPProvider: OTSubscriberDelegate {
         }
         
         unsubscribe()
-                
-        channel?.channelInvokeMethod("onSubscriberDisconnected", arguments: nil)
     }
 
     public func subscriber(_: OTSubscriberKit, didFailWithError error: OTError) {
