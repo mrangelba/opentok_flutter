@@ -325,7 +325,7 @@ extension VoIPProvider: OTSessionDelegate {
     public func session(_: OTSession, streamDestroyed stream: OTStream) {
         os_log("[OTSessionDelegate] %s", type: .info, #function)
 
-        //unsubscribe()
+        unsubscribe()
         
         channel?.channelInvokeMethod("onSessionStreamDropped", arguments: nil)
     }
@@ -379,7 +379,7 @@ extension VoIPProvider: OTPublisherDelegate {
     }
 }
 
-extension VoIPProvider: OTSubscriberKitDelegate {
+extension VoIPProvider: OTSubscriberDelegate {
     public func subscriberDidConnect(toStream stream: OTSubscriberKit) {
         if self.loggingEnabled {
             os_log("[OTSubscriberDelegate] %@", type: .info, #function)
@@ -430,6 +430,12 @@ extension VoIPProvider: OTSubscriberKitDelegate {
         }
         
         channel?.channelInvokeMethod("onSubscriberVideoStopped", arguments: nil)
+    }
+
+    public func subscriberVideoDataReceived(_: OTSubscriber) {
+        if self.loggingEnabled {
+            os_log("[OTSubscriberDelegate] subscriberVideoDataReceived", type: .info)
+        }
     }
 }
 
