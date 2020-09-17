@@ -12,7 +12,22 @@ class VoIPProvider(
         private var publisherSettings: PublisherSettings,
         var subscriberSettings: SubscriberSettings?,
         var channel: MethodCallHandlerImpl,
-        var loggingEnabled: Boolean) : Session.SessionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener {
+        var loggingEnabled: Boolean) :
+        Session.SessionListener,
+        Session.ReconnectionListener,
+        Session.ConnectionListener,
+        Session.SignalListener,
+        Publisher.CameraListener,
+        PublisherKit.PublisherListener,
+        PublisherKit.AudioStatsListener,
+        PublisherKit.VideoStatsListener,
+        PublisherKit.AudioLevelListener,
+        SubscriberKit.SubscriberListener,
+        SubscriberKit.StreamListener,
+        SubscriberKit.VideoListener,
+        SubscriberKit.VideoStatsListener,
+        SubscriberKit.AudioStatsListener,
+        SubscriberKit.AudioLevelListener{
 
     private var session: Session? = null
     private var publisher: Publisher? = null
@@ -46,6 +61,9 @@ class VoIPProvider(
 
         session = Session.Builder(context, apiKey, sessionId).build()
         session?.setSessionListener(this)
+        session?.setConnectionListener(this)
+        session?.setReconnectionListener(this)
+        session?.setSignalListener(this)
         session?.connect(token)
     }
 
@@ -144,7 +162,9 @@ class VoIPProvider(
         if (loggingEnabled) {
             Log.d("[VOIPProvider]", "[SessionListener] onStreamDropped")
         }
-        
+
+        unsubscribe()
+
         channel.channelInvokeMethod("onSessionStreamDropped", null)
     }
 
@@ -223,6 +243,12 @@ class VoIPProvider(
         }
     }
 
+    override fun onReconnected(p0: SubscriberKit?) {
+        Log.d("[VOIPProvider]", "[SubscriberListener] onReconnected")
+
+        TODO("Not yet implemented")
+    }
+
     override fun onDisconnected(p0: SubscriberKit?) {
         if (loggingEnabled) {
             Log.d("[VOIPProvider]", "[SubscriberListener] onDisconnected")
@@ -255,6 +281,10 @@ class VoIPProvider(
                 .build()
 
         publisher?.setPublisherListener(this)
+        publisher?.setCameraListener(this)
+        publisher?.setAudioLevelListener(this)
+        publisher?.setAudioStatsListener(this)
+        publisher?.setVideoStatsListener(this)
         publisher?.setStyle(STYLE_VIDEO_SCALE, publisherSettings.styleVideoScale
                 ?: STYLE_VIDEO_FILL)
         session?.publish(publisher)
@@ -304,6 +334,11 @@ class VoIPProvider(
 
         subscriber = Subscriber.Builder(context, stream).build()
         subscriber?.setSubscriberListener(this)
+        subscriber?.setVideoListener(this)
+        subscriber?.setAudioLevelListener(this)
+        subscriber?.setStreamListener(this)
+        subscriber?.setAudioStatsListener(this)
+        subscriber?.setVideoStatsListener(this)
         subscriber?.setStyle(STYLE_VIDEO_SCALE, subscriberSettings?.styleVideoScale
                 ?: STYLE_VIDEO_FILL)
         session?.subscribe(subscriber)
@@ -323,6 +358,90 @@ class VoIPProvider(
             channel.channelInvokeMethod("onSubscriberVideoStopped", null)
             channel.channelInvokeMethod("onSubscriberAudioStopped", null)
         }
+    }
+
+    /// ReconnectionListener
+
+    override fun onReconnected(p0: Session?) {
+        Log.d("[VOIPProvider]", "onReconnected")
+    }
+
+    override fun onReconnecting(p0: Session?) {
+        Log.d("[VOIPProvider]", "onReconnecting")
+    }
+
+    /// ConnectionListener
+
+    override fun onConnectionDestroyed(p0: Session?, p1: Connection?) {
+        Log.d("[VOIPProvider]", "onConnectionDestroyed")
+    }
+
+    override fun onConnectionCreated(p0: Session?, p1: Connection?) {
+        Log.d("[VOIPProvider]", "onConnectionCreated")
+    }
+
+    /// SignalListener
+
+    override fun onSignalReceived(p0: Session?, p1: String?, p2: String?, p3: Connection?) {
+        Log.d("[VOIPProvider]", "onSignalReceived")
+    }
+
+    /// AudioStatsListener
+
+    override fun onAudioStats(p0: PublisherKit?, p1: Array<out PublisherKit.PublisherAudioStats>?) {
+        Log.d("[VOIPProvider]", "onAudioStats")
+    }
+
+    /// VideoStatsListener
+
+    override fun onVideoStats(p0: PublisherKit?, p1: Array<out PublisherKit.PublisherVideoStats>?) {
+        Log.d("[VOIPProvider]", "onVideoStats")
+    }
+
+    /// AudioLevelListener
+
+    override fun onAudioLevelUpdated(p0: PublisherKit?, p1: Float) {
+        Log.d("[VOIPProvider]", "onAudioLevelUpdated")
+    }
+
+    override fun onAudioStats(p0: SubscriberKit?, p1: SubscriberKit.SubscriberAudioStats?) {
+        Log.d("[VOIPProvider]", "onAudioStats")
+    }
+
+    override fun onVideoStats(p0: SubscriberKit?, p1: SubscriberKit.SubscriberVideoStats?) {
+        Log.d("[VOIPProvider]", "onVideoStats")
+    }
+
+    override fun onAudioLevelUpdated(p0: SubscriberKit?, p1: Float) {
+        Log.d("[VOIPProvider]", "onAudioLevelUpdated")
+    }
+
+    override fun onVideoDataReceived(p0: SubscriberKit?) {
+        Log.d("[VOIPProvider]", "onVideoDataReceived")
+    }
+
+    override fun onVideoEnabled(p0: SubscriberKit?, p1: String?) {
+        Log.d("[VOIPProvider]", "onVideoEnabled")
+    }
+
+    override fun onVideoDisableWarning(p0: SubscriberKit?) {
+        Log.d("[VOIPProvider]", "onVideoDisableWarning")
+    }
+
+    override fun onVideoDisableWarningLifted(p0: SubscriberKit?) {
+        Log.d("[VOIPProvider]", "onVideoDisableWarningLifted")
+    }
+
+    override fun onVideoDisabled(p0: SubscriberKit?, p1: String?) {
+        Log.d("[VOIPProvider]", "onVideoDisabled")
+    }
+
+    override fun onCameraChanged(p0: Publisher?, p1: Int) {
+        Log.d("[VOIPProvider]", "onCameraChanged")
+    }
+
+    override fun onCameraError(p0: Publisher?, p1: OpentokError?) {
+        Log.d("[VOIPProvider]", "onCameraError")
     }
 
 }
