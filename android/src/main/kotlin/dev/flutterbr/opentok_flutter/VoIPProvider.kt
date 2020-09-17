@@ -144,6 +144,8 @@ class VoIPProvider(
         if (loggingEnabled) {
             Log.d("[VOIPProvider]", "[SessionListener] onStreamDropped")
         }
+
+        unsubscribe()
         
         channel.channelInvokeMethod("onSessionStreamDropped", null)
     }
