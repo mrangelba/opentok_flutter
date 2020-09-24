@@ -3,9 +3,12 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import 'opemtok_controller_value.dart';
+import 'opentok_controller_value.dart';
 import 'opentok_publisher_kit_settings.dart';
 import 'opentok_subscriber_kit_settings.dart';
+import 'publisher.dart';
+import 'session.dart';
+import 'subscriber.dart';
 
 class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
   static const _channel =
@@ -14,6 +17,10 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
   OpenTokController() : super(const OpenTokControllerValue.uninitialized()) {
     _channel.setMethodCallHandler(_handleMethodCall);
   }
+
+  final session = Session(_channel);
+  final subscriber = Subscriber(_channel);
+  final publisher = Publisher(_channel);
 
   // Core Methods
   /// Creates an OpenTok instance.
@@ -89,140 +96,10 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
     super.dispose();
   }
 
-  /// Unmute the publisher audio module.
-  ///
-  /// The audio module is enabled by default.
-  Future<bool> unmutePublisherAudio() async {
-    try {
-      return await _channel.invokeMethod('unmutePublisherAudio');
-    } catch (e) {
-      print(e);
-
-      return false;
-    }
-  }
-
-  /// Mute the publisher audio module.
-  ///
-  /// The audio module is enabled by default.
-  Future<bool> mutePublisherAudio() async {
-    try {
-      return await _channel.invokeMethod('mutePublisherAudio');
-    } catch (e) {
-      print(e);
-
-      return false;
-    }
-  }
-
-  /// Enables the subscriber video module.
-  ///
-  /// The audio module is enabled by default.
-  Future<bool> enablePublisherVideo() async {
-    try {
-      return await _channel.invokeMethod('enablePublisherVideo');
-    } catch (e) {
-      print(e);
-
-      return false;
-    }
-  }
-
-  /// Disables the publishers video module.
-  ///
-  /// The audio module is enabled by default.
-  Future<bool> disablePublisherVideo() async {
-    try {
-      return await _channel.invokeMethod('disablePublisherVideo');
-    } catch (e) {
-      print(e);
-
-      return false;
-    }
-  }
-
-  /// Disables the subscribers audio.
-  Future<bool> muteSubscriberAudio() async {
-    try {
-      return await _channel.invokeMethod('muteSubscriberAudio');
-    } catch (e) {
-      print(e);
-
-      return false;
-    }
-  }
-
-  /// Enables the subscribers audio.
-  Future<bool> unmuteSubscriberAudio() async {
-    try {
-      return await _channel.invokeMethod('unmuteSubscriberAudio');
-    } catch (e) {
-      print(e);
-
-      return false;
-    }
-  }
-
-  /// Switch the audio output to use speakers
-  Future<bool> switchAudioToSpeaker() async {
-    try {
-      return await _channel.invokeMethod("switchAudioToSpeaker");
-    } catch (e) {
-      print(e);
-
-      return false;
-    }
-  }
-
-  /// Switch the audio output to use phone
-  Future<bool> switchAudioToPhone() async {
-    try {
-      return await _channel.invokeMethod("switchAudioToReceiver");
-    } catch (e) {
-      print(e);
-
-      return false;
-    }
-  }
-
-  // Camera Control
-  /// Switches between front and rear cameras.
-  Future<bool> switchCamera() async {
-    try {
-      return await _channel.invokeMethod('switchCamera');
-    } catch (e) {
-      print(e);
-
-      return false;
-    }
-  }
-
   VoidCallback onWillConnect;
-  VoidCallback onSessionError;
-  VoidCallback onSessionConnected;
-  VoidCallback onSessionDisconnected;
-  VoidCallback onSessionStreamDropped;
-  VoidCallback onSessionStreamReceived;
-  VoidCallback onPublisherStreamCreated;
-  VoidCallback onSessionVideoReceived;
-  VoidCallback onPublisherStreamDestroyed;
-  VoidCallback onPublisherError;
-  VoidCallback onSubscriberConnected;
-  VoidCallback onSubscriberDisconnected;
-  VoidCallback onSubscriberError;
-  VoidCallback onPublisherAudioStarted;
-  VoidCallback onPublisherVideoStarted;
-  VoidCallback onPublisherAudioStopped;
-  VoidCallback onPublisherVideoStopped;
-  VoidCallback onSubscriberAudioStarted;
-  VoidCallback onSubscriberVideoStarted;
-  VoidCallback onSubscriberAudioStopped;
-  VoidCallback onSubscriberVideoStopped;
 
   // CallHandler
   Future<dynamic> _handleMethodCall(MethodCall call) async {
-    Map values = call.arguments;
-
     switch (call.method) {
       case 'onWillConnect':
         if (onWillConnect != null) {
@@ -231,74 +108,74 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
         break;
 
       case 'onSessionConnected':
-        if (onSessionConnected != null) {
-          onSessionConnected();
+        if (session.onConnected != null) {
+          session.onConnected();
         }
         break;
 
       case 'onSessionDisconnected':
-        if (onSessionDisconnected != null) {
-          onSessionDisconnected();
+        if (session.onDisconnected != null) {
+          session.onDisconnected();
         }
         break;
 
       case 'onSessionStreamDropped':
-        if (onSessionStreamDropped != null) {
-          onSessionStreamDropped();
+        if (session.onStreamDropped != null) {
+          session.onStreamDropped();
         }
         break;
 
       case 'onSessionStreamReceived':
-        if (onSessionStreamReceived != null) {
-          onSessionStreamReceived();
+        if (session.onStreamReceived != null) {
+          session.onStreamReceived();
         }
         break;
 
       case 'onSessionVideoReceived':
-        if (onSessionVideoReceived != null) {
-          onSessionVideoReceived();
+        if (session.onVideoReceived != null) {
+          session.onVideoReceived();
         }
         break;
 
       case 'onSessionError':
-        if (onSessionError != null) {
-          onSessionError();
+        if (session.onError != null) {
+          session.onError(call.arguments);
         }
         break;
 
       case 'onPublisherStreamCreated':
-        if (onPublisherStreamCreated != null) {
-          onPublisherStreamCreated();
+        if (publisher.onStreamCreated != null) {
+          publisher.onStreamCreated();
         }
         break;
 
       case 'onPublisherStreamDestroyed':
-        if (onPublisherStreamDestroyed != null) {
-          onPublisherStreamDestroyed();
+        if (publisher.onStreamDestroyed != null) {
+          publisher.onStreamDestroyed();
         }
         break;
 
       case 'onPublisherError':
-        if (onPublisherError != null) {
-          onPublisherError();
+        if (publisher.onError != null) {
+          publisher.onError(call.arguments);
         }
         break;
 
       case 'onSubscriberConnected':
-        if (onSubscriberConnected != null) {
-          onSubscriberConnected();
+        if (subscriber.onConnected != null) {
+          subscriber.onConnected();
         }
         break;
 
       case 'onSubscriberDisconnected':
-        if (onSubscriberDisconnected != null) {
-          onSubscriberDisconnected();
+        if (subscriber.onDisconnected != null) {
+          subscriber.onDisconnected();
         }
         break;
 
       case 'onSubscriberError':
-        if (onSubscriberError != null) {
-          onSubscriberError();
+        if (subscriber.onError != null) {
+          subscriber.onError(call.arguments);
         }
         break;
 
@@ -306,8 +183,8 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
         {
           value = value.copyWith(isPublisherVideoEnabled: true);
 
-          if (onPublisherVideoStarted != null) {
-            onPublisherVideoStarted();
+          if (publisher.onVideoStarted != null) {
+            publisher.onVideoStarted();
           }
           break;
         }
@@ -315,8 +192,8 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
         {
           value = value.copyWith(isPublisherAudioEnabled: true);
 
-          if (onPublisherAudioStarted != null) {
-            onPublisherAudioStarted();
+          if (publisher.onAudioStarted != null) {
+            publisher.onAudioStarted();
           }
           break;
         }
@@ -325,8 +202,8 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
         {
           value = value.copyWith(isPublisherVideoEnabled: false);
 
-          if (onPublisherVideoStopped != null) {
-            onPublisherVideoStopped();
+          if (publisher.onVideoStopped != null) {
+            publisher.onVideoStopped();
           }
           break;
         }
@@ -334,8 +211,8 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
         {
           value = value.copyWith(isPublisherAudioEnabled: false);
 
-          if (onPublisherAudioStopped != null) {
-            onPublisherAudioStopped();
+          if (publisher.onAudioStopped != null) {
+            publisher.onAudioStopped();
           }
           break;
         }
@@ -344,8 +221,8 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
         {
           value = value.copyWith(isSubscriberVideoEnabled: true);
 
-          if (onSubscriberVideoStarted != null) {
-            onSubscriberVideoStarted();
+          if (subscriber.onVideoStarted != null) {
+            subscriber.onVideoStarted();
           }
           break;
         }
@@ -353,8 +230,8 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
         {
           value = value.copyWith(isSubscriberAudioEnabled: true);
 
-          if (onSubscriberAudioStarted != null) {
-            onSubscriberAudioStarted();
+          if (subscriber.onAudioStarted != null) {
+            subscriber.onAudioStarted();
           }
           break;
         }
@@ -363,8 +240,8 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
         {
           value = value.copyWith(isSubscriberVideoEnabled: false);
 
-          if (onSubscriberVideoStopped != null) {
-            onSubscriberVideoStopped();
+          if (subscriber.onVideoStopped != null) {
+            subscriber.onVideoStopped();
           }
           break;
         }
@@ -372,8 +249,8 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
         {
           value = value.copyWith(isSubscriberAudioEnabled: false);
 
-          if (onSubscriberAudioStopped != null) {
-            onSubscriberAudioStopped();
+          if (subscriber.onAudioStopped != null) {
+            subscriber.onAudioStopped();
           }
           break;
         }

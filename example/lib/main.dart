@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:opentok_flutter/enums.dart';
+import 'package:opentok_flutter/src/enums.dart';
 import 'dart:async';
 
 import 'package:opentok_flutter/opentok_flutter.dart';
@@ -51,6 +51,8 @@ class _MyAppState extends State<MyApp> {
       cameraFrameRate: CameraCaptureFrameRate.OTCameraCaptureFrameRate30FPS,
     );
 
+    _controller.session.setErrorListener((error) => print(error));
+
     _controller.addListener(() {
       setState(() {});
     });
@@ -67,22 +69,22 @@ class _MyAppState extends State<MyApp> {
 
   void _togglePublisherVideo() async {
     if (_controller.value.isPublisherVideoEnabled) {
-      await _controller?.disablePublisherVideo();
+      await _controller?.publisher?.disableVideo();
     } else {
-      await _controller?.enablePublisherVideo();
+      await _controller?.publisher?.enableVideo();
     }
   }
 
   void _onToggleMute() async {
     if (_controller.value.isPublisherAudioEnabled) {
-      await _controller?.mutePublisherAudio();
+      await _controller?.publisher?.disableAudio();
     } else {
-      await _controller?.unmutePublisherAudio();
+      await _controller?.publisher?.enableAudio();
     }
   }
 
   void _onSwitchCamera() async {
-    await _controller?.switchCamera();
+    await _controller?.publisher?.switchCamera();
   }
 
   Widget _toolbar() {

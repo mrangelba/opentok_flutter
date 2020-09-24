@@ -16,18 +16,10 @@ class VoIPProvider(
         Session.SessionListener,
         Session.ReconnectionListener,
         Session.ConnectionListener,
-        Session.SignalListener,
-        Publisher.CameraListener,
         PublisherKit.PublisherListener,
-        PublisherKit.AudioStatsListener,
-        PublisherKit.VideoStatsListener,
-        PublisherKit.AudioLevelListener,
         SubscriberKit.SubscriberListener,
         SubscriberKit.StreamListener,
-        SubscriberKit.VideoListener,
-        SubscriberKit.VideoStatsListener,
-        SubscriberKit.AudioStatsListener,
-        SubscriberKit.AudioLevelListener{
+        SubscriberKit.VideoListener {
 
     private var session: Session? = null
     private var publisher: Publisher? = null
@@ -63,7 +55,6 @@ class VoIPProvider(
         session?.setSessionListener(this)
         session?.setConnectionListener(this)
         session?.setReconnectionListener(this)
-        session?.setSignalListener(this)
         session?.connect(token)
     }
 
@@ -75,56 +66,92 @@ class VoIPProvider(
         session?.disconnect()
     }
 
-    fun mutePublisherAudio() {
+    fun unpublishAudio() {
         if (loggingEnabled) {
             Log.d("[VOIPProvider]", "Mute publisher audio")
         }
 
-        publisher?.publishAudio = false
-        channel.channelInvokeMethod("onPublisherAudioStopped", null)
+        if (publisher != null) {
+            publisher?.publishAudio = false
+            channel.channelInvokeMethod("onPublisherAudioStopped", null)
+        }
     }
 
-    fun unmutePublisherAudio() {
+    fun publishAudio() {
         if (loggingEnabled) {
             Log.d("[VOIPProvider]", "UnMute publisher audio")
         }
 
-        publisher?.publishAudio = true
-        channel.channelInvokeMethod("onPublisherAudioStarted", null)
+        if (publisher != null) {
+            publisher?.publishAudio = true
+            channel.channelInvokeMethod("onPublisherAudioStarted", null)
+        }
     }
 
-    fun muteSubscriberAudio() {
+    fun unsubscribeToAudio() {
         if (loggingEnabled) {
             Log.d("[VOIPProvider]", "Mute subscriber audio")
         }
 
-        subscriber?.subscribeToAudio = false
+        if (subscriber != null) {
+            subscriber?.subscribeToAudio = false
+            channel.channelInvokeMethod("onSubscriberAudioStopped", null)
+        }
     }
 
-    fun unmuteSubscriberAudio() {
+    fun subscribeToAudio() {
         if (loggingEnabled) {
             Log.d("[VOIPProvider]", "UnMute subscriber audio")
         }
 
-        subscriber?.subscribeToAudio = true
+        if (subscriber != null) {
+            subscriber?.subscribeToAudio = true
+            channel.channelInvokeMethod("onSubscriberAudioStarted", null)
+        }
     }
 
-    fun enablePublisherVideo() {
+    fun publishVideo() {
         if (loggingEnabled) {
             Log.d("[VOIPProvider]", "Enable publisher video")
         }
 
-        publisher?.publishVideo = true
-        channel.channelInvokeMethod("onPublisherVideoStarted", null)
+        if (publisher != null) {
+            publisher?.publishVideo = true
+            channel.channelInvokeMethod("onPublisherVideoStarted", null)
+        }
     }
 
-    fun disablePublisherVideo() {
+    fun unpublishVideo() {
         if (loggingEnabled) {
             Log.d("[VOIPProvider]", "Disable publisher video")
         }
 
-        publisher?.publishVideo = false
-        channel.channelInvokeMethod("onPublisherVideoStopped", null)
+        if (publisher != null) {
+            publisher?.publishVideo = false
+            channel.channelInvokeMethod("onPublisherVideoStopped", null)
+        }
+    }
+
+    fun subscribeToVideo() {
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "Enable subscriber video")
+        }
+
+        if (subscriber != null) {
+            subscriber?.subscribeToVideo = true
+            channel.channelInvokeMethod("onSubscriberVideoStarted", null)
+        }
+    }
+
+    fun unsubscribeToVideo() {
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "Disable subscriber video")
+        }
+
+        if (subscriber != null) {
+            subscriber?.subscribeToVideo = false
+            channel.channelInvokeMethod("onSubscriberVideoStopped", null)
+        }
     }
 
     fun switchCamera() {
@@ -133,6 +160,94 @@ class VoIPProvider(
         }
 
         publisher?.cycleCamera()
+    }
+
+    /// Private
+    private fun publish() {
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[VOIPProvider] publish")
+        }
+
+        publisher = Publisher.Builder(context)
+                .audioTrack(publisherSettings.audioTrack ?: true)
+                .videoTrack(publisherSettings.videoTrack ?: true)
+                .audioBitrate(publisherSettings.audioBitrate ?: 400000)
+                .name(publisherSettings.name ?: "")
+                .frameRate(parseCameraCaptureFrameRate(publisherSettings.cameraFrameRate))
+                .resolution(parseCameraCaptureResolution(publisherSettings.cameraResolution))
+                .build()
+
+        publisher?.setPublisherListener(this)
+        publisher?.setStyle(STYLE_VIDEO_SCALE, publisherSettings.styleVideoScale
+                ?: STYLE_VIDEO_FILL)
+        session?.publish(publisher)
+    }
+
+    private fun parseCameraCaptureFrameRate(value: String?): Publisher.CameraCaptureFrameRate {
+        return when (value) {
+            "OTCameraCaptureFrameRate15FPS" -> {
+                Publisher.CameraCaptureFrameRate.FPS_15
+            }
+            "OTCameraCaptureFrameRate7FPS" -> {
+                Publisher.CameraCaptureFrameRate.FPS_7
+            }
+            "OTCameraCaptureFrameRate1FPS" -> {
+                Publisher.CameraCaptureFrameRate.FPS_1
+            }
+            else -> Publisher.CameraCaptureFrameRate.FPS_30
+        }
+    }
+
+    private fun parseCameraCaptureResolution(value: String?): Publisher.CameraCaptureResolution {
+        return when (value) {
+            "OTCameraCaptureResolutionLow" -> {
+                Publisher.CameraCaptureResolution.LOW
+            }
+            "OTCameraCaptureResolutionMedium" -> {
+                Publisher.CameraCaptureResolution.MEDIUM
+            }
+            else -> Publisher.CameraCaptureResolution.HIGH
+        }
+    }
+
+    private fun unpublish() {
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[VOIPProvider] unpublish")
+        }
+        if (publisher != null) {
+            session?.unpublish(publisher)
+            publisher = null
+        }
+    }
+
+    private fun subscribe(stream: Stream) {
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[VOIPProvider] subscribe")
+        }
+
+        subscriber = Subscriber.Builder(context, stream).build()
+        subscriber?.setSubscriberListener(this)
+        subscriber?.setVideoListener(this)
+        subscriber?.setStreamListener(this)
+        subscriber?.setStyle(STYLE_VIDEO_SCALE, subscriberSettings?.styleVideoScale
+                ?: STYLE_VIDEO_FILL)
+        session?.subscribe(subscriber)
+    }
+
+    private fun unsubscribe() {
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", " unsubscribe")
+        }
+
+        session?.unsubscribe(subscriber)
+
+        if (subscriber != null) {
+            subscriber = null
+
+            channel.channelInvokeMethod("onSubscriberDisconnected", null)
+            channel.channelInvokeMethod("onSubscriberVideoStopped", null)
+            channel.channelInvokeMethod("onSubscriberAudioStopped", null)
+        }
     }
 
     /// SessionListener
@@ -185,7 +300,7 @@ class VoIPProvider(
             Log.d("[VOIPProvider]", "[SessionListener] onError ${error?.message}")
         }
 
-        channel.channelInvokeMethod("onSessionError", null)
+        channel.channelInvokeMethod("onSessionError", error?.message)
     }
 
     /// PublisherListener
@@ -194,15 +309,10 @@ class VoIPProvider(
         if (loggingEnabled) {
             Log.d("[VOIPProvider]", "[PublisherListener] onStreamCreated")
         }
-        channel.channelInvokeMethod("onPublisherStreamCreated", null)
 
-        if (stream?.hasVideo() == true) {
-            channel.channelInvokeMethod("onPublisherVideoStarted", null)
-        }
-
-        if (stream?.hasAudio() == true) {
-            channel.channelInvokeMethod("onPublisherAudioStarted", null)
-        }
+        channel.channelInvokeMethod("onPublisherStreamCreated", stream?.streamId)
+        channel.channelInvokeMethod("onPublisherVideoStarted", null)
+        channel.channelInvokeMethod("onPublisherAudioStarted", null)
     }
 
     override fun onStreamDestroyed(p0: PublisherKit?, stream: Stream?) {
@@ -210,7 +320,7 @@ class VoIPProvider(
             Log.d("[VOIPProvider]", "[PublisherListener] onStreamDestroyed")
         }
 
-        channel.channelInvokeMethod("onPublisherStreamDestroyed", null)
+        channel.channelInvokeMethod("onPublisherStreamDestroyed", stream?.streamId)
         channel.channelInvokeMethod("onPublisherVideoStopped", null)
         channel.channelInvokeMethod("onPublisherAudioStopped", null)
 
@@ -222,7 +332,7 @@ class VoIPProvider(
             Log.d("[VOIPProvider]", "[PublisherListener] onError ${error?.message}")
         }
 
-        channel.channelInvokeMethod("onPublisherError", null)
+        channel.channelInvokeMethod("onPublisherError", error?.message)
     }
 
     /// SubscriberListener
@@ -233,20 +343,8 @@ class VoIPProvider(
         }
 
         channel.channelInvokeMethod("onSubscriberConnected", null)
-
-        if (p0?.stream?.hasVideo() == true) {
-            channel.channelInvokeMethod("onSubscriberVideoStarted", null)
-        }
-
-        if (p0?.stream?.hasAudio() == true) {
-            channel.channelInvokeMethod("onSubscriberAudioStarted", null)
-        }
-    }
-
-    override fun onReconnected(p0: SubscriberKit?) {
-        Log.d("[VOIPProvider]", "[SubscriberListener] onReconnected")
-
-        TODO("Not yet implemented")
+        channel.channelInvokeMethod("onSubscriberVideoStarted", null)
+        channel.channelInvokeMethod("onSubscriberAudioStarted", null)
     }
 
     override fun onDisconnected(p0: SubscriberKit?) {
@@ -255,6 +353,8 @@ class VoIPProvider(
         }
 
         unsubscribe()
+
+        channel.channelInvokeMethod("onSubscriberDisconnected", null)
     }
 
     override fun onError(p0: SubscriberKit?, error: OpentokError?) {
@@ -262,186 +362,95 @@ class VoIPProvider(
             Log.d("[VOIPProvider]", "[SubscriberListener] onError ${error?.message}")
         }
 
-        channel.channelInvokeMethod("onSubscriberError", null)
+        channel.channelInvokeMethod("onSubscriberError", error?.message)
     }
 
-    /// Private
-    private fun publish() {
+    // StreamListener
+
+    override fun onReconnected(p0: SubscriberKit?) {
         if (loggingEnabled) {
-            Log.d("[VOIPProvider]", "[VOIPProvider] publish")
+            Log.d("[VOIPProvider]", "[StreamListener] onReconnected")
         }
 
-        publisher = Publisher.Builder(context)
-                .audioTrack(publisherSettings.audioTrack ?: true)
-                .videoTrack(publisherSettings.videoTrack ?: true)
-                .audioBitrate(publisherSettings.audioBitrate ?: 400000)
-                .name(publisherSettings.name ?: "")
-                .frameRate(parseCameraCaptureFrameRate(publisherSettings.cameraFrameRate))
-                .resolution(parseCameraCaptureResolution(publisherSettings.cameraResolution))
-                .build()
-
-        publisher?.setPublisherListener(this)
-        publisher?.setCameraListener(this)
-        publisher?.setAudioLevelListener(this)
-        publisher?.setAudioStatsListener(this)
-        publisher?.setVideoStatsListener(this)
-        publisher?.setStyle(STYLE_VIDEO_SCALE, publisherSettings.styleVideoScale
-                ?: STYLE_VIDEO_FILL)
-        session?.publish(publisher)
-    }
-
-    private fun parseCameraCaptureFrameRate(value: String?): Publisher.CameraCaptureFrameRate {
-        return when (value) {
-            "OTCameraCaptureFrameRate15FPS" -> {
-                Publisher.CameraCaptureFrameRate.FPS_15
-            }
-            "OTCameraCaptureFrameRate7FPS" -> {
-                Publisher.CameraCaptureFrameRate.FPS_7
-            }
-            "OTCameraCaptureFrameRate1FPS" -> {
-                Publisher.CameraCaptureFrameRate.FPS_1
-            }
-            else -> Publisher.CameraCaptureFrameRate.FPS_30
-        }
-    }
-
-    private fun parseCameraCaptureResolution(value: String?): Publisher.CameraCaptureResolution {
-        return when (value) {
-            "OTCameraCaptureResolutionLow" -> {
-                Publisher.CameraCaptureResolution.LOW
-            }
-            "OTCameraCaptureResolutionMedium" -> {
-                Publisher.CameraCaptureResolution.MEDIUM
-            }
-            else -> Publisher.CameraCaptureResolution.HIGH
-        }
-    }
-
-    private fun unpublish() {
-        if (loggingEnabled) {
-            Log.d("[VOIPProvider]", "[VOIPProvider] unpublish")
-        }
-        if (publisher != null) {
-            session?.unpublish(publisher)
-            publisher = null
-        }
-    }
-
-    private fun subscribe(stream: Stream) {
-        if (loggingEnabled) {
-            Log.d("[VOIPProvider]", "[VOIPProvider] subscribe")
-        }
-
-        subscriber = Subscriber.Builder(context, stream).build()
-        subscriber?.setSubscriberListener(this)
-        subscriber?.setVideoListener(this)
-        subscriber?.setAudioLevelListener(this)
-        subscriber?.setStreamListener(this)
-        subscriber?.setAudioStatsListener(this)
-        subscriber?.setVideoStatsListener(this)
-        subscriber?.setStyle(STYLE_VIDEO_SCALE, subscriberSettings?.styleVideoScale
-                ?: STYLE_VIDEO_FILL)
-        session?.subscribe(subscriber)
-    }
-
-    private fun unsubscribe() {
-        if (loggingEnabled) {
-            Log.d("[VOIPProvider]", " unsubscribe")
-        }
-
-        session?.unsubscribe(subscriber)
-
-        if (subscriber != null) {
-            subscriber = null
-
-            channel.channelInvokeMethod("onSubscriberDisconnected", null)
-            channel.channelInvokeMethod("onSubscriberVideoStopped", null)
-            channel.channelInvokeMethod("onSubscriberAudioStopped", null)
-        }
+        channel.channelInvokeMethod("onSubscriberReconnected", null)
     }
 
     /// ReconnectionListener
 
     override fun onReconnected(p0: Session?) {
-        Log.d("[VOIPProvider]", "onReconnected")
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[ReconnectionListener] onReconnected")
+        }
+
+        channel.channelInvokeMethod("onSessionReconnected", null)
     }
 
     override fun onReconnecting(p0: Session?) {
-        Log.d("[VOIPProvider]", "onReconnecting")
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[ReconnectionListener] onReconnecting")
+        }
+
+        channel.channelInvokeMethod("onSessionReconnecting", null)
     }
 
     /// ConnectionListener
 
     override fun onConnectionDestroyed(p0: Session?, p1: Connection?) {
-        Log.d("[VOIPProvider]", "onConnectionDestroyed")
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[ConnectionListener] onConnectionDestroyed")
+        }
+
+        channel.channelInvokeMethod("onSessionConnectionDestroyed", p1?.connectionId)
     }
 
     override fun onConnectionCreated(p0: Session?, p1: Connection?) {
-        Log.d("[VOIPProvider]", "onConnectionCreated")
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[ConnectionListener] onConnectionCreated")
+        }
+
+        channel.channelInvokeMethod("onSessionConnectionCreated", p1?.connectionId)
     }
 
-    /// SignalListener
-
-    override fun onSignalReceived(p0: Session?, p1: String?, p2: String?, p3: Connection?) {
-        Log.d("[VOIPProvider]", "onSignalReceived")
-    }
-
-    /// AudioStatsListener
-
-    override fun onAudioStats(p0: PublisherKit?, p1: Array<out PublisherKit.PublisherAudioStats>?) {
-        Log.d("[VOIPProvider]", "onAudioStats")
-    }
-
-    /// VideoStatsListener
-
-    override fun onVideoStats(p0: PublisherKit?, p1: Array<out PublisherKit.PublisherVideoStats>?) {
-        Log.d("[VOIPProvider]", "onVideoStats")
-    }
-
-    /// AudioLevelListener
-
-    override fun onAudioLevelUpdated(p0: PublisherKit?, p1: Float) {
-        Log.d("[VOIPProvider]", "onAudioLevelUpdated")
-    }
-
-    override fun onAudioStats(p0: SubscriberKit?, p1: SubscriberKit.SubscriberAudioStats?) {
-        Log.d("[VOIPProvider]", "onAudioStats")
-    }
-
-    override fun onVideoStats(p0: SubscriberKit?, p1: SubscriberKit.SubscriberVideoStats?) {
-        Log.d("[VOIPProvider]", "onVideoStats")
-    }
-
-    override fun onAudioLevelUpdated(p0: SubscriberKit?, p1: Float) {
-        Log.d("[VOIPProvider]", "onAudioLevelUpdated")
-    }
+    /// VideoListener
 
     override fun onVideoDataReceived(p0: SubscriberKit?) {
-        Log.d("[VOIPProvider]", "onVideoDataReceived")
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[VideoListener] onVideoDataReceived")
+        }
+
+        channel.channelInvokeMethod("onSubscriberVideoDataReceived", null)
     }
 
     override fun onVideoEnabled(p0: SubscriberKit?, p1: String?) {
-        Log.d("[VOIPProvider]", "onVideoEnabled")
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[VideoListener] onVideoEnabled")
+        }
+
+        channel.channelInvokeMethod("onSubscriberVideoEnabled", p1)
     }
 
     override fun onVideoDisableWarning(p0: SubscriberKit?) {
-        Log.d("[VOIPProvider]", "onVideoDisableWarning")
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[VideoListener] onVideoDisableWarning")
+        }
+
+        channel.channelInvokeMethod("onSubscriberVideoDisableWarning", null)
     }
 
     override fun onVideoDisableWarningLifted(p0: SubscriberKit?) {
-        Log.d("[VOIPProvider]", "onVideoDisableWarningLifted")
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[VideoListener] onVideoDisableWarningLifted")
+        }
+
+        channel.channelInvokeMethod("onSubscriberVideoDisableWarningLifted", null)
     }
 
     override fun onVideoDisabled(p0: SubscriberKit?, p1: String?) {
-        Log.d("[VOIPProvider]", "onVideoDisabled")
-    }
+        if (loggingEnabled) {
+            Log.d("[VOIPProvider]", "[VideoListener] onVideoDisabled")
+        }
 
-    override fun onCameraChanged(p0: Publisher?, p1: Int) {
-        Log.d("[VOIPProvider]", "onCameraChanged")
-    }
-
-    override fun onCameraError(p0: Publisher?, p1: OpentokError?) {
-        Log.d("[VOIPProvider]", "onCameraError")
+        channel.channelInvokeMethod("onSubscriberVideoDisabled", p1)
     }
 
 }

@@ -82,7 +82,7 @@ public class VoIPProvider: NSObject {
         }
     }
 
-    func mutePublisherAudio() throws {
+    func unpublishAudio() throws {
         if self.loggingEnabled {
             os_log("[VoIPProvider] Enable publisher audio", type: .info)
         }
@@ -94,7 +94,7 @@ public class VoIPProvider: NSObject {
         channel?.channelInvokeMethod("onPublisherAudioStopped", arguments: nil)
     }
 
-    func unmutePublisherAudio() throws {
+    func publishAudio() throws {
         if self.loggingEnabled {
             os_log("[VoIPProvider] Unmute publisher audio", type: .info)
         }
@@ -106,7 +106,7 @@ public class VoIPProvider: NSObject {
         channel?.channelInvokeMethod("onPublisherAudioStarted", arguments: nil)
     }
 
-    func muteSubscriberAudio() throws {
+    func subscribeToAudio() throws {
         if self.loggingEnabled {
             os_log("[VoIPProvider] Mute subscriber audio", type: .info)
         }
@@ -116,7 +116,7 @@ public class VoIPProvider: NSObject {
         }
     }
 
-    func unmuteSubscriberAudio() throws {
+    func unsubscribeToAudio() throws {
         if self.loggingEnabled {
             os_log("[VoIPProvider] Unmute subscriber audio", type: .info)
         }
@@ -126,7 +126,7 @@ public class VoIPProvider: NSObject {
         }
     }
 
-    func enablePublisherVideo() throws {
+    func publisherVideo() throws {
         if self.loggingEnabled {
             os_log("[VoIPProvider] Enable publisher video", type: .info)
         }
@@ -140,7 +140,7 @@ public class VoIPProvider: NSObject {
         }
     }
 
-    func disablePublisherVideo() throws {
+    func unpublisherVideo() throws {
         if self.loggingEnabled {
             os_log("[VoIPProvider] Disable publisher video", type: .info)
         }
@@ -149,6 +149,26 @@ public class VoIPProvider: NSObject {
             providerPublisher.publishVideo = false
             
             channel?.channelInvokeMethod("onPublisherVideoStopped", arguments: nil)
+        }
+    }
+
+    func subscribeToVideo() throws {
+        if self.loggingEnabled {
+            os_log("[VoIPProvider] Disable subscriber video", type: .info)
+        }
+
+        if providerSubscriber != nil {
+            providerSubscriber.subscribeToVideo = false
+        }
+    }
+
+    func unsubscribeToVideo() throws {
+        if self.loggingEnabled {
+            os_log("[VoIPProvider] Enable subscriber video", type: .info)
+        }
+
+        if providerSubscriber != nil {
+            providerSubscriber.subscribeToVideo = true
         }
     }
     

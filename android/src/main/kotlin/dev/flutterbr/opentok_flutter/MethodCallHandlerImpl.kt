@@ -84,50 +84,66 @@ class MethodCallHandlerImpl(private var activity: Activity,
                     result.success(false)
                 }
             }
-            "enablePublisherVideo" -> {
+            "publishVideo" -> {
                 try {
-                    provider?.enablePublisherVideo()
+                    provider?.publishVideo()
                     result.success(true)
                 } catch (ex: Exception) {
                     result.success(false)
                 }
 
             }
-            "disablePublisherVideo" -> {
+            "unpublishVideo" -> {
                 try {
-                    provider?.disablePublisherVideo()
+                    provider?.unpublishVideo()
                     result.success(true)
                 } catch (ex: Exception) {
                     result.success(false)
                 }
             }
-            "unmutePublisherAudio" -> {
+            "publishAudio" -> {
                 try {
-                    provider?.unmutePublisherAudio()
+                    provider?.publishAudio()
                     result.success(true)
                 } catch (ex: Exception) {
                     result.success(false)
                 }
             }
-            "mutePublisherAudio" -> {
+            "unpublishAudio" -> {
                 try {
-                    provider?.mutePublisherAudio()
+                    provider?.unpublishAudio()
                     result.success(true)
                 } catch (ex: Exception) {
                     result.success(false)
                 }
             }
-            "muteSubscriberAudio" -> {
+            "subscribeToAudio" -> {
                 try {
-                    provider?.muteSubscriberAudio()
+                    provider?.subscribeToAudio()
                     result.success(true)
                 } catch (ex: Exception) {
                     result.success(false)
                 }
             }
-            "unmuteSubscriberAudio" -> {
+            "unsubscribeToAudio" -> {
                 try {
-                    provider?.unmuteSubscriberAudio()
+                    provider?.unsubscribeToAudio()
+                    result.success(true)
+                } catch (ex: Exception) {
+                    result.success(false)
+                }
+            }
+            "unsubscribeToVideo" -> {
+                try {
+                    provider?.unsubscribeToVideo()
+                    result.success(true)
+                } catch (ex: Exception) {
+                    result.success(false)
+                }
+            }
+            "subscribeToVideo" -> {
+                try {
+                    provider?.subscribeToVideo()
                     result.success(true)
                 } catch (ex: Exception) {
                     result.success(false)

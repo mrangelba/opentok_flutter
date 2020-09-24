@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:opentok_flutter/opentok_controller.dart';
-import 'package:opentok_flutter/opemtok_controller_value.dart';
 
-class PublisherView extends StatelessWidget {
+import 'opentok_controller.dart';
+import 'opentok_controller_value.dart';
+
+class SubscriberView extends StatelessWidget {
   final OpenTokController controller;
 
-  const PublisherView({Key key, @required this.controller}) : super(key: key);
+  const SubscriberView({Key key, this.controller}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,18 +16,18 @@ class PublisherView extends StatelessWidget {
       valueListenable: controller,
       builder: (context, value, _) {
         if (!controller.value.isInitialized ||
-            !controller.value.isPublisherVideoEnabled) {
+            !controller.value.isSubscriberVideoEnabled) {
           return SizedBox.shrink();
         }
 
         if (defaultTargetPlatform == TargetPlatform.iOS) {
           return UiKitView(
-            viewType: 'plugins.flutterbr.dev/opentok_flutter/publisher_view',
+            viewType: 'plugins.flutterbr.dev/opentok_flutter/subscriber_view',
             creationParamsCodec: StandardMessageCodec(),
           );
         } else if (defaultTargetPlatform == TargetPlatform.android) {
           return AndroidView(
-            viewType: 'plugins.flutterbr.dev/opentok_flutter/publisher_view',
+            viewType: 'plugins.flutterbr.dev/opentok_flutter/subscriber_view',
             creationParamsCodec: StandardMessageCodec(),
           );
         }
