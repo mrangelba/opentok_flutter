@@ -18,7 +18,7 @@ class OpenTokController extends ValueNotifier<OpenTokControllerValue> {
     _channel.setMethodCallHandler(_handleMethodCall);
   }
 
-  final session = Session(_channel);
+  final session = Session();
   final subscriber = Subscriber(_channel);
   final publisher = Publisher(_channel);
 

@@ -1,9 +1,6 @@
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 class Session {
-  final MethodChannel _channel;
-
   VoidCallback onConnected;
   VoidCallback onConnectionCreated;
   VoidCallback onConnectionDestroyed;
@@ -14,8 +11,6 @@ class Session {
   VoidCallback onStreamDropped;
   VoidCallback onStreamReceived;
   VoidCallback onVideoReceived;
-
-  Session(this._channel);
 
   void setConnectedListener(VoidCallback listener) => onConnected = listener;
   void setConnectionCreatedListener(VoidCallback listener) =>

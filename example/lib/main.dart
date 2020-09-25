@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:opentok_flutter/src/enums.dart';
 import 'dart:async';
 
 import 'package:opentok_flutter/opentok_flutter.dart';
