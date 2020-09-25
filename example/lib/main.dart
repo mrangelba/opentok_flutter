@@ -50,7 +50,25 @@ class _MyAppState extends State<MyApp> {
       cameraFrameRate: CameraCaptureFrameRate.OTCameraCaptureFrameRate30FPS,
     );
 
-    _controller.session.setErrorListener((error) => print(error));
+    // listeners
+    _controller.session.setConnectedListener(() => print('Session connected'));
+    _controller.session.setConnectionCreatedListener(
+        (connectionId) => print('Session connection created => $connectionId'));
+    _controller.session.setDisconnectedListener(() {});
+    _controller.session
+        .setErrorListener((error) => print('Session error => $error'));
+    _controller.session
+        .setReconnectedListener(() => print('Session reconnected'));
+    _controller.session
+        .setReconnectingListener(() => print('Session reconnecting'));
+    _controller.session
+        .setStreamDroppedListener(() => print('Session stream dropped'));
+    _controller.session
+        .setStreamReceivedListener(() => print('Session stream received'));
+    _controller.session.setConnectionDestroyedListener((connectionId) =>
+        print('Session connection destroyed => $connectionId'));
+    _controller.session
+        .setVideoReceivedListener(() => print('Session video received'));
 
     _controller.addListener(() {
       setState(() {});
@@ -155,20 +173,56 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               Column(
                 children: <Widget>[
-                  _controller.value.isSubscriberVideoEnabled
-                      ? Flexible(
-                          child: SubscriberView(controller: _controller),
-                          flex: 1,
-                        )
-                      : SizedBox.shrink(),
-                  _controller.value.isPublisherVideoEnabled
-                      ? Flexible(
-                          child: Container(
-                              color: Colors.white,
-                              child: PublisherView(controller: _controller)),
-                          flex: 1,
-                        )
-                      : SizedBox.shrink(),
+                  if (_controller.value.isSubscriberVideoEnabled)
+                    Flexible(
+                      child: SubscriberView(controller: _controller),
+                      flex: 1,
+                    ),
+                  if (_controller.value.isPublisherVideoEnabled)
+                    Flexible(
+                      child: Container(
+                        color: Colors.white,
+                        child: Stack(
+                          children: [
+                            PublisherView(controller: _controller),
+                            StreamBuilder<bool>(
+                              stream:
+                                  _controller.publisher.videoDisabledQuality,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData && snapshot.data) {
+                                  return Positioned(
+                                    top: 32,
+                                    right: 16,
+                                    child: Icon(
+                                      Icons.signal_cellular_off,
+                                      color: Colors.red,
+                                    ),
+                                  );
+                                }
+                                return SizedBox.shrink();
+                              },
+                            ),
+                            StreamBuilder<double>(
+                              stream: _controller.publisher.videoBandwidth,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  return Positioned(
+                                    top: 64,
+                                    right: 16,
+                                    child: Text(
+                                      snapshot.data.toString(),
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  );
+                                }
+                                return SizedBox.shrink();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      flex: 1,
+                    ),
                 ],
               ),
               _toolbar(),

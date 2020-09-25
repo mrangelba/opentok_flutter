@@ -7,6 +7,7 @@ import com.opentok.android.*
 import com.opentok.android.BaseVideoRenderer.STYLE_VIDEO_FILL
 import com.opentok.android.BaseVideoRenderer.STYLE_VIDEO_SCALE
 
+
 class VoIPProvider(
         var context: Context,
         private var publisherSettings: PublisherSettings,
@@ -17,6 +18,7 @@ class VoIPProvider(
         Session.ReconnectionListener,
         Session.ConnectionListener,
         PublisherKit.PublisherListener,
+        PublisherKit.VideoStatsListener,
         SubscriberKit.SubscriberListener,
         SubscriberKit.StreamListener,
         SubscriberKit.VideoListener {
@@ -25,6 +27,18 @@ class VoIPProvider(
     private var publisher: Publisher? = null
     private var subscriber: Subscriber? = null
     private var videoReceived: Boolean = false
+    private var startTestTime: Double = 0.0
+    private val timeVideoTest = 15
+    private val timeWindow = 15
+
+    private var prevVideoPacketsLost = 0L
+    private var prevVideoPacketsSent = 0L
+    private var prevVideoTimestamp = 0L
+    private var prevVideoBytes = 0L
+    private var videoPLRatio = 0.0
+    private var videoBandwidth = 0L
+    private var publisherAudioOnly = false
+    private var publisherVideoQualityWarning = false
 
     val subscriberView: View?
         get() {
@@ -171,15 +185,18 @@ class VoIPProvider(
         publisher = Publisher.Builder(context)
                 .audioTrack(publisherSettings.audioTrack ?: true)
                 .videoTrack(publisherSettings.videoTrack ?: true)
-                .audioBitrate(publisherSettings.audioBitrate ?: 400000)
+                .audioBitrate(publisherSettings.audioBitrate ?: 40000)
                 .name(publisherSettings.name ?: "")
                 .frameRate(parseCameraCaptureFrameRate(publisherSettings.cameraFrameRate))
                 .resolution(parseCameraCaptureResolution(publisherSettings.cameraResolution))
                 .build()
 
         publisher?.setPublisherListener(this)
+        publisher?.setVideoStatsListener(this)
         publisher?.setStyle(STYLE_VIDEO_SCALE, publisherSettings.styleVideoScale
                 ?: STYLE_VIDEO_FILL)
+        publisher?.audioFallbackEnabled = publisherSettings.audioFallback ?: true
+
         session?.publish(publisher)
     }
 
@@ -451,6 +468,87 @@ class VoIPProvider(
         }
 
         channel.channelInvokeMethod("onSubscriberVideoDisabled", p1)
+    }
+
+    /// VideoStatsListener
+
+    override fun onVideoStats(subscriber: PublisherKit?, stats: Array<out PublisherKit.PublisherVideoStats>?) {
+        if (subscriber?.publishVideo == true && stats != null) {
+            if (startTestTime == 0.0) {
+                startTestTime = System.currentTimeMillis().toDouble() / 1000;
+            }
+
+            checkVideoStats(stats[0]);
+        }
+    }
+
+    private fun checkVideoStats(stats: PublisherKit.PublisherVideoStats) {
+        val videoTimestamp = (stats.timeStamp / 1000).toLong()
+
+        //initialize values
+        if (prevVideoTimestamp == 0L) {
+            prevVideoTimestamp = videoTimestamp
+            prevVideoBytes = stats.videoBytesSent
+        }
+
+        if (videoTimestamp - prevVideoTimestamp >= timeWindow) {
+            //calculate video packets lost ratio
+            if (prevVideoPacketsSent != 0L) {
+                val pl = stats.videoPacketsLost - prevVideoPacketsLost
+                val pr = stats.videoPacketsSent - prevVideoPacketsSent
+                val pt = pl + pr
+
+                if (pt > 0) {
+                    videoPLRatio = (pl.toDouble() / pt.toDouble())
+                }
+            }
+
+            prevVideoPacketsLost = stats.videoPacketsLost
+            prevVideoPacketsSent = stats.videoPacketsSent
+
+            //calculate video bandwidth
+            videoBandwidth = (8 * (stats.videoPacketsSent - prevVideoBytes) / (videoTimestamp - prevVideoTimestamp))
+            prevVideoTimestamp = videoTimestamp
+            prevVideoBytes = stats.videoPacketsSent
+
+            if (loggingEnabled) {
+                Log.i("[VOIPProvider]", "Video bandwidth (bps): " + videoBandwidth.toString() + " Video Bytes Sent: " + stats.videoPacketsSent.toString() + " Video packet lost: " + stats.videoPacketsLost.toString() + " Video packet loss ratio: " + videoPLRatio.toString())
+            }
+
+            channel.channelInvokeMethod("onPublisherVideoBandwidth", videoBandwidth)
+
+            //check quality of the video call after timeVideoTest seconds
+            if ((System.currentTimeMillis() / 1000 - startTestTime) > timeVideoTest) {
+                checkVideoQuality();
+            }
+        }
+    }
+
+    private fun checkVideoQuality() {
+        if (session != null) {
+            if (videoPLRatio >= 0.15) {
+                if (!publisherAudioOnly) {
+                    publisherAudioOnly = true
+                    publisherVideoQualityWarning = false
+                    channel.channelInvokeMethod("onPublisherVideoDisabled", SubscriberKit.VIDEO_REASON_QUALITY)
+                }
+            } else if (videoBandwidth < 350.0 || videoPLRatio > 0.03) {
+                if (!publisherAudioOnly && !publisherVideoQualityWarning) {
+                    publisherVideoQualityWarning = true
+                    channel.channelInvokeMethod("onPublisherVideoDisableWarning", null)
+                }
+            } else {
+                if (publisherVideoQualityWarning) {
+                    publisherVideoQualityWarning = false
+                    channel.channelInvokeMethod("onPublisherVideoDisableWarningLifted", null)
+                }
+
+                if (publisherAudioOnly) {
+                    publisherAudioOnly = false
+                    channel.channelInvokeMethod("onPublisherVideoEnabled", SubscriberKit.VIDEO_REASON_QUALITY)
+                }
+            }
+        }
     }
 
 }

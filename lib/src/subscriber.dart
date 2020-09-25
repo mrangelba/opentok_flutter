@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:rxdart/rxdart.dart';
 
 class Subscriber {
   final MethodChannel _channel;
+  final _videoDisabledQualityController = BehaviorSubject<bool>.seeded(false);
 
   VoidCallback onAudioStarted;
   VoidCallback onAudioStopped;
@@ -11,14 +15,17 @@ class Subscriber {
   void Function(String) onError;
   VoidCallback onReconnected;
   VoidCallback onVideoDataReceived;
-  VoidCallback onVideoDisabled;
   VoidCallback onVideoDisableWarning;
   VoidCallback onVideoDisableWarningLifted;
-  VoidCallback onVideoEnabled;
   VoidCallback onVideoStarted;
   VoidCallback onVideoStopped;
+  void Function(String) _onVideoDisabled;
+  void Function(String) _onVideoEnabled;
 
   Subscriber(this._channel);
+
+  Stream<bool> get videoDisabledQuality =>
+      _videoDisabledQualityController.stream;
 
   /// Disables the subscribers audio.
   Future<bool> disableAudio() async {
@@ -40,6 +47,10 @@ class Subscriber {
 
       return false;
     }
+  }
+
+  void dispose() {
+    _videoDisabledQualityController.close();
   }
 
   /// Enables the subscribers audio.
@@ -64,6 +75,26 @@ class Subscriber {
     }
   }
 
+  void onVideoDisabled(String reason) {
+    if (reason == 'quality' && !_videoDisabledQualityController.isClosed) {
+      _videoDisabledQualityController.add(true);
+    }
+
+    if (_onVideoDisabled != null) {
+      _onVideoDisabled(reason);
+    }
+  }
+
+  void onVideoEnabled(String reason) {
+    if (reason == 'quality' && !_videoDisabledQualityController.isClosed) {
+      _videoDisabledQualityController.add(false);
+    }
+
+    if (_onVideoEnabled != null) {
+      _onVideoEnabled(reason);
+    }
+  }
+
   void setAudioStartedListener(VoidCallback listener) =>
       onAudioStarted = listener;
   void setAudioStoppedListener(VoidCallback listener) =>
@@ -76,14 +107,14 @@ class Subscriber {
       onReconnected = listener;
   void setVideoDataReceivedListener(VoidCallback listener) =>
       onVideoDataReceived = listener;
-  void setVideoDisabledListener(VoidCallback listener) =>
-      onVideoDisabled = listener;
+  void setVideoDisabledListener(void Function(String) listener) =>
+      _onVideoDisabled = listener;
   void setVideoDisableWarningLiftedListener(VoidCallback listener) =>
       onVideoDisableWarningLifted = listener;
   void setVideoDisableWarningListener(VoidCallback listener) =>
       onVideoDisableWarning = listener;
-  void setVideoEnabledListener(VoidCallback listener) =>
-      onVideoEnabled = listener;
+  void setVideoEnabledListener(void Function(String) listener) =>
+      _onVideoEnabled = listener;
   void setVideoStartedListener(VoidCallback listener) =>
       onVideoStarted = listener;
   void setVideoStoppedListener(VoidCallback listener) =>

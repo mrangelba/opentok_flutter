@@ -1,18 +1,33 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:rxdart/rxdart.dart';
 
 class Publisher {
   final MethodChannel _channel;
+  final _videoDisabledQualityController = BehaviorSubject<bool>.seeded(false);
+  final _videoBandwidthController = BehaviorSubject<double>.seeded(0.0);
 
   VoidCallback onAudioStarted;
   VoidCallback onAudioStopped;
   void Function(String) onError;
-  VoidCallback onStreamCreated;
-  VoidCallback onStreamDestroyed;
+  void Function(String) onStreamCreated;
+  void Function(String) onStreamDestroyed;
   VoidCallback onVideoStarted;
   VoidCallback onVideoStopped;
+  VoidCallback onVideoDisableWarning;
+  VoidCallback onVideoDisableWarningLifted;
+  void Function(String) _onVideoDisabled;
+  void Function(String) _onVideoEnabled;
+  void Function(double) _onVideoBandwidth;
 
   Publisher(this._channel);
+
+  Stream<double> get videoBandwidth => _videoBandwidthController.stream;
+
+  Stream<bool> get videoDisabledQuality =>
+      _videoDisabledQualityController.stream;
 
   /// Unmute the publisher audio module.
   ///
@@ -38,6 +53,11 @@ class Publisher {
 
       return false;
     }
+  }
+
+  void dispose() {
+    _videoDisabledQualityController.close();
+    _videoBandwidthController.close();
   }
 
   /// Mute the publisher audio module.
@@ -66,15 +86,55 @@ class Publisher {
     }
   }
 
+  void onVideoBandwidth(double bandwidth) {
+    if (!_videoBandwidthController.isClosed) {
+      _videoBandwidthController.add(bandwidth);
+    }
+
+    if (_onVideoBandwidth != null) {
+      _onVideoBandwidth(bandwidth);
+    }
+  }
+
+  void onVideoDisabled(String reason) {
+    if (reason == 'quality' && !_videoDisabledQualityController.isClosed) {
+      _videoDisabledQualityController.add(true);
+    }
+
+    if (_onVideoDisabled != null) {
+      _onVideoDisabled(reason);
+    }
+  }
+
+  void onVideoEnabled(String reason) {
+    if (reason == 'quality' && !_videoDisabledQualityController.isClosed) {
+      _videoDisabledQualityController.add(false);
+    }
+
+    if (_onVideoEnabled != null) {
+      _onVideoEnabled(reason);
+    }
+  }
+
   void setAudioStartedListener(VoidCallback listener) =>
       onAudioStarted = listener;
   void setAudioStoppedListener(VoidCallback listener) =>
       onAudioStopped = listener;
   void setErrorListener(void Function(String) listener) => onError = listener;
-  void setStreamCreatedListener(VoidCallback listener) =>
+  void setStreamCreatedListener(void Function(String) listener) =>
       onStreamCreated = listener;
-  void setStreamDestroyedListener(VoidCallback listener) =>
+  void setStreamDestroyedListener(void Function(String) listener) =>
       onStreamDestroyed = listener;
+  void setVideoBandwidthListener(void Function(double) listener) =>
+      _onVideoBandwidth = listener;
+  void setVideoDisabledListener(void Function(String) listener) =>
+      _onVideoDisabled = listener;
+  void setVideoDisableWarningLiftedListener(VoidCallback listener) =>
+      onVideoDisableWarningLifted = listener;
+  void setVideoDisableWarningListener(VoidCallback listener) =>
+      onVideoDisableWarning = listener;
+  void setVideoEnabledListener(void Function(String) listener) =>
+      _onVideoEnabled = listener;
   void setVideoStartedListener(VoidCallback listener) =>
       onVideoStarted = listener;
   void setVideoStoppedListener(VoidCallback listener) =>
