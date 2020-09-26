@@ -444,6 +444,10 @@ class VoIPProvider(
         }
 
         channel.channelInvokeMethod("onSubscriberVideoEnabled", p1)
+
+        if (p1 != SubscriberKit.VIDEO_REASON_QUALITY) {
+            channel.channelInvokeMethod("onSubscriberVideoStarted", null)
+        }
     }
 
     override fun onVideoDisableWarning(p0: SubscriberKit?) {
@@ -468,6 +472,10 @@ class VoIPProvider(
         }
 
         channel.channelInvokeMethod("onSubscriberVideoDisabled", p1)
+
+        if (p1 != SubscriberKit.VIDEO_REASON_QUALITY) {
+            channel.channelInvokeMethod("onSubscriberVideoStopped", null)
+        }
     }
 
     /// VideoStatsListener
