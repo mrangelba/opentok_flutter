@@ -69,6 +69,8 @@ class _MyAppState extends State<MyApp> {
         print('Session connection destroyed => $connectionId'));
     _controller.session
         .setVideoReceivedListener(() => print('Session video received'));
+    _controller.subscriber.setVideoDisabledListener(
+        (reason) => print('Subscriber video disable => $reason'));
 
     _controller.addListener(() {
       setState(() {});
@@ -173,56 +175,58 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               Column(
                 children: <Widget>[
-                  if (_controller.value.isSubscriberVideoEnabled)
-                    Flexible(
-                      child: SubscriberView(controller: _controller),
-                      flex: 1,
-                    ),
-                  if (_controller.value.isPublisherVideoEnabled)
-                    Flexible(
-                      child: Container(
-                        color: Colors.white,
-                        child: Stack(
-                          children: [
-                            PublisherView(controller: _controller),
-                            StreamBuilder<bool>(
-                              stream:
-                                  _controller.publisher.videoDisabledQuality,
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData && snapshot.data) {
-                                  return Positioned(
-                                    top: 32,
-                                    right: 16,
-                                    child: Icon(
-                                      Icons.signal_cellular_off,
-                                      color: Colors.red,
-                                    ),
-                                  );
-                                }
-                                return SizedBox.shrink();
-                              },
+                  _controller.value.isSubscriberVideoEnabled
+                      ? Flexible(
+                          child: SubscriberView(controller: _controller),
+                          flex: 1,
+                        )
+                      : SizedBox.shrink(),
+                  _controller.value.isPublisherVideoEnabled
+                      ? Flexible(
+                          child: Container(
+                            color: Colors.white,
+                            child: Stack(
+                              children: [
+                                PublisherView(controller: _controller),
+                                StreamBuilder<bool>(
+                                  stream: _controller
+                                      .publisher.videoDisabledQuality,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData && snapshot.data) {
+                                      return Positioned(
+                                        top: 32,
+                                        right: 16,
+                                        child: Icon(
+                                          Icons.signal_cellular_off,
+                                          color: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                    return SizedBox.shrink();
+                                  },
+                                ),
+                                StreamBuilder<double>(
+                                  stream: _controller.publisher.videoBandwidth,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      return Positioned(
+                                        top: 64,
+                                        right: 16,
+                                        child: Text(
+                                          snapshot.data.toString(),
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      );
+                                    }
+                                    return SizedBox.shrink();
+                                  },
+                                ),
+                              ],
                             ),
-                            StreamBuilder<double>(
-                              stream: _controller.publisher.videoBandwidth,
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData) {
-                                  return Positioned(
-                                    top: 64,
-                                    right: 16,
-                                    child: Text(
-                                      snapshot.data.toString(),
-                                      style: TextStyle(color: Colors.red),
-                                    ),
-                                  );
-                                }
-                                return SizedBox.shrink();
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      flex: 1,
-                    ),
+                          ),
+                          flex: 1,
+                        )
+                      : SizedBox.shrink(),
                 ],
               ),
               _toolbar(),
