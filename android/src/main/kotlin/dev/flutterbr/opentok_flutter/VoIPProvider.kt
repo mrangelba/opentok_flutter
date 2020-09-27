@@ -296,7 +296,7 @@ class VoIPProvider(
         }
 
         unsubscribe()
-
+        
         channel.channelInvokeMethod("onSessionStreamDropped", null)
     }
 
