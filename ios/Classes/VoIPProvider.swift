@@ -19,6 +19,19 @@ public class VoIPProvider: NSObject {
     fileprivate var providerPublisher: OTPublisher!
     fileprivate var providerSubscriber: OTSubscriber!
     fileprivate var videoReceived: Bool = false
+   
+    fileprivate var startTestTime: Double = 0.0
+    fileprivate let timeVideoTest: Double = 15.0
+    fileprivate let timeWindow: Double = 15.0
+    fileprivate var prevVideoPacketsLost: Int64 = 0
+    fileprivate var prevVideoPacketsSent: Int64 = 0
+    fileprivate var prevVideoTimestamp: Double = 0.0
+    fileprivate var prevVideoBytes: Int64 = 0
+    fileprivate var videoPLRatio: Int64 = 0
+    fileprivate var videoBandwidth: Double = 0.0
+    fileprivate var publisherAudioOnly = false
+    fileprivate var publisherVideoQualityWarning = false
+    
     
     var subscriberView: UIView? {
         return providerSubscriber?.view
@@ -126,7 +139,7 @@ public class VoIPProvider: NSObject {
         }
     }
 
-    func publisherVideo() throws {
+    func publishVideo() throws {
         if self.loggingEnabled {
             os_log("[VoIPProvider] Enable publisher video", type: .info)
         }
@@ -140,7 +153,7 @@ public class VoIPProvider: NSObject {
         }
     }
 
-    func unpublisherVideo() throws {
+    func unpublishVideo() throws {
         if self.loggingEnabled {
             os_log("[VoIPProvider] Disable publisher video", type: .info)
         }
@@ -182,7 +195,6 @@ public class VoIPProvider: NSObject {
             providerPublisher.cameraPosition = .front
         }
     }
-    
 }
 
 private extension VoIPProvider {
@@ -196,6 +208,8 @@ private extension VoIPProvider {
         settings.name = self.publisherSettings?.name ?? UIDevice.current.name
         settings.videoTrack = self.publisherSettings?.videoTrack ?? true
         settings.audioTrack = self.publisherSettings?.audioTrack ?? true
+        settings.audioBitrate = self.publisherSettings?.audioBitrate ?? 40000
+        
         switch self.publisherSettings?.cameraResolution {
             case .none:
                 settings.cameraResolution = .high
@@ -234,6 +248,8 @@ private extension VoIPProvider {
             }
         }
         
+        providerPublisher.networkStatsDelegate = self;
+        providerPublisher.audioFallbackEnabled = self.publisherSettings?.audioFallback ?? true
         providerPublisher.cameraPosition = .front
 
         // Publish publisher to session
@@ -277,7 +293,7 @@ private extension VoIPProvider {
     }
 
     func unsubscribe() {
-        if subscriber != nil {
+        if providerSubscriber != nil {
             if self.loggingEnabled {
                 os_log("[VoIPProvider] Unsubscribe")
             }
@@ -296,18 +312,26 @@ private extension VoIPProvider {
 
 extension VoIPProvider: OTSessionDelegate {
     public func sessionDidConnect(_ session: OTSession) {
-        os_log("[OTSessionDelegate] %s", type: .info, #function)
+        if self.loggingEnabled {
+            os_log("[OTSessionDelegate] %s", type: .info, #function)
+        }
         publish()
         
         channel?.channelInvokeMethod("onSessionConnected", arguments: nil)
     }
 
     public func sessionDidReconnect(_ session: OTSession) {
-        os_log("[OTSessionDelegate] %s", type: .info, #function)
+        if self.loggingEnabled {
+            os_log("[OTSessionDelegate] %s", type: .info, #function)
+        }
+        
+        channel?.channelInvokeMethod("onSessionReconnected", arguments: nil)
     }
 
     public func sessionDidDisconnect(_ session: OTSession) {
-        os_log("[OTSessionDelegate] %s", type: .info, #function)
+        if self.loggingEnabled {
+            os_log("[OTSessionDelegate] %s", type: .info, #function)
+        }
 
         unsubscribe()
         unpublish()
@@ -322,28 +346,39 @@ extension VoIPProvider: OTSessionDelegate {
     }
 
     public func sessionDidBeginReconnecting(_ session: OTSession) {
-        os_log("[OTSessionDelegate] %s", type: .info, #function)
+        if self.loggingEnabled {
+            os_log("[OTSessionDelegate] %s", type: .info, #function)
+        }
+        
+        channel?.channelInvokeMethod("onSessionReconnecting", arguments: nil)
     }
 
     public func session(_ session: OTSession, didFailWithError error: OTError) {
-        os_log("[OTSessionDelegate] %s %s", type: .info, #function, error)
+        if self.loggingEnabled {
+            os_log("[OTSessionDelegate] %s %s", type: .info, #function, error)
+        }
         
-        channel?.channelInvokeMethod("onSessionError", arguments: nil)
+        channel?.channelInvokeMethod("onSessionError", arguments: error.description)
     }
 
     public func session(_ session: OTSession, streamCreated stream: OTStream) {
-        os_log("[OTSessionDelegate] %s", type: .info, #function)
+        if self.loggingEnabled {
+            os_log("[OTSessionDelegate] %s", type: .info, #function)
+        }
 
         subscribe(toStream: stream)
 
         channel?.channelInvokeMethod("onSessionStreamReceived", arguments: nil)
+        
         if (stream.hasVideo) {
             channel?.channelInvokeMethod("onSessionVideoReceived", arguments: nil)
         }
     }
 
     public func session(_ session: OTSession, streamDestroyed stream: OTStream) {
-        os_log("[OTSessionDelegate] %s", type: .info, #function)
+        if self.loggingEnabled {
+            os_log("[OTSessionDelegate] %s", type: .info, #function)
+        }
 
         unsubscribe()
         
@@ -351,37 +386,45 @@ extension VoIPProvider: OTSessionDelegate {
     }
 
     public func session(_ session: OTSession, connectionCreated connection: OTConnection) {
-        os_log("[OTSessionDelegate] %s", type: .info, #function)
+        if self.loggingEnabled {
+            os_log("[OTSessionDelegate] %s", type: .info, #function)
+        }
+        
+        channel?.channelInvokeMethod("onSessionConnectionCreated", arguments: connection.connectionId)
     }
 
     public func session(_ session: OTSession, connectionDestroyed connection: OTConnection) {
-        os_log("[OTSessionDelegate] %s", type: .info, #function)
+        if self.loggingEnabled {
+            os_log("[OTSessionDelegate] %s", type: .info, #function)
+        }
+        
+        channel?.channelInvokeMethod("onSessionConnectionDestroyed", arguments: connection.connectionId)
     }
 
     public func session(_ session: OTSession, receivedSignalType type: String?, from connection: OTConnection?, with string: String?) {
-        os_log("[OTSessionDelegate] %s %s %s %s", type: .info, #function, type ?? "<No signal type>", connection ?? "<Nil connection>", string ?? "<No string>")
+        if self.loggingEnabled {
+            os_log("[OTSessionDelegate] %s %s %s %s", type: .info, #function, type ?? "<No signal type>", connection ?? "<Nil connection>", string ?? "<No string>")
+        }
     }
 }
 
 extension VoIPProvider: OTPublisherDelegate {
     public func publisher(_ publisher: OTPublisherKit, streamCreated stream: OTStream) {
-        os_log("[OTPublisherDelegate] %s", type: .info, #function)
-
-        channel?.channelInvokeMethod("onPublisherStreamCreated", arguments: nil)
-        
-        if (stream.hasVideo) {
-            channel?.channelInvokeMethod("onPublisherVideoStarted", arguments: nil)
+        if self.loggingEnabled {
+            os_log("[OTPublisherDelegate] %s", type: .info, #function)
         }
 
-        if (stream.hasAudio) {
-            channel?.channelInvokeMethod("onPublisherAudioStarted", arguments: nil)
-        }
+        channel?.channelInvokeMethod("onPublisherStreamCreated", arguments: stream.streamId)
+        channel?.channelInvokeMethod("onPublisherVideoStarted", arguments: nil)
+        channel?.channelInvokeMethod("onPublisherAudioStarted", arguments: nil)
     }
 
     public func publisher(_ publisher: OTPublisherKit, streamDestroyed stream: OTStream) {
-        os_log("[OTPublisherDelegate] %s", type: .info, #function)
+        if self.loggingEnabled {
+            os_log("[OTPublisherDelegate] %s", type: .info, #function)
+        }
         
-        channel?.channelInvokeMethod("onPublisherStreamDestroyed", arguments: nil)
+        channel?.channelInvokeMethod("onPublisherStreamDestroyed", arguments: stream.streamId)
         channel?.channelInvokeMethod("onPublisherVideoStopped", arguments: nil)
         channel?.channelInvokeMethod("onPublisherAudioStopped", arguments: nil)
 
@@ -389,88 +432,166 @@ extension VoIPProvider: OTPublisherDelegate {
     }
 
     public func publisher(_ publisher: OTPublisherKit, didFailWithError error: OTError) {
-        os_log("[OTPublisherDelegate] %s %s", type: .info, #function, error.description)
+        if self.loggingEnabled {
+            os_log("[OTPublisherDelegate] %s %s", type: .info, #function, error.description)
+        }
         
-        channel?.channelInvokeMethod("onPublisherError", arguments: nil)
+        channel?.channelInvokeMethod("onPublisherError", arguments: error.description)
     }
 
     public func publisher(_ publisher: OTPublisher, didChangeCameraPosition position: AVCaptureDevice.Position) {
-        os_log("[OTPublisherDelegate] %s %d", type: .info, #function, position.rawValue)
+        if self.loggingEnabled {
+            os_log("[OTPublisherDelegate] %s %d", type: .info, #function, position.rawValue)
+        }
+    }
+}
+
+extension VoIPProvider: OTPublisherKitNetworkStatsDelegate {
+    private func checkVideoStats(stats: OTPublisherKitVideoNetworkStats) {
+        let videoTimestamp: Double = (stats.timestamp / 1000)
+
+        //initialize values
+        if (self.prevVideoTimestamp == 0) {
+            self.prevVideoTimestamp = videoTimestamp
+            self.prevVideoBytes = stats.videoBytesSent
+        }
+
+        if (videoTimestamp - self.prevVideoTimestamp >= self.timeWindow) {
+            //calculate video packets lost ratio
+            if (self.prevVideoPacketsSent != 0) {
+                let pl: Int64 = stats.videoPacketsLost - self.prevVideoPacketsLost
+                let pr: Int64 = stats.videoPacketsSent - self.prevVideoPacketsSent
+                let pt: Int64 = pl + pr
+
+                if (pt > 0) {
+                    self.videoPLRatio = (pl / pt)
+                }
+            }
+
+            self.prevVideoPacketsLost = stats.videoPacketsLost
+            self.prevVideoPacketsSent = stats.videoPacketsSent
+
+            //calculate video bandwidth
+            self.videoBandwidth = (8.0 * Double(stats.videoPacketsSent - self.prevVideoBytes) / (videoTimestamp - self.prevVideoTimestamp))
+            self.prevVideoTimestamp = videoTimestamp
+            self.prevVideoBytes = stats.videoPacketsSent
+
+            if self.loggingEnabled {
+                os_log("[OTPublisherDelegate] Video bandwidth (bps): %f", type: .info, self.videoBandwidth.rounded())
+                os_log("[OTPublisherDelegate] Video Bytes Sent: %d", type: .info, stats.videoPacketsSent)
+                os_log("[OTPublisherDelegate] Video packet lost: %d", type: .info, stats.videoPacketsLost)
+                os_log("[OTPublisherDelegate] Video packet loss ratio: %d", type: .info, self.videoPLRatio)
+            }
+
+            channel?.channelInvokeMethod("onPublisherVideoBandwidth", arguments: self.videoBandwidth.rounded() )
+
+            //check quality of the video call after timeVideoTest seconds
+            if ((Date().timeIntervalSince1970 - startTestTime) > self.timeVideoTest) {
+            //    checkVideoQuality();
+            }
+        }
+    }
+    
+    public func publisher(_ publisher: OTPublisherKit, videoNetworkStatsUpdated stats: [OTPublisherKitVideoNetworkStats]) {
+        if (publisher.publishVideo == true) {
+            if (self.startTestTime == 0.0) {
+                self.startTestTime = Date().timeIntervalSince1970;
+            }
+
+            self.checkVideoStats(stats: stats[0]);
+        }
     }
 }
 
 extension VoIPProvider: OTSubscriberKitDelegate {
+    private func reasonValueToString(reason: OTSubscriberVideoEventReason) -> String {
+        switch reason {
+            case .codecNotSupported:
+                return "codecNotSupported";
+            case .publisherPropertyChanged:
+                return "publishVideo";
+            case .qualityChanged:
+                return "quality";
+            case .subscriberPropertyChanged:
+                return "subscribeToVideo";
+             default:
+                return "codecNotSupported";
+        }
+    }
+    
     public func subscriberDidConnect(toStream subscriber: OTSubscriberKit) {
-        channel?.channelInvokeMethod("onSubscriberConnected", arguments: nil)
-
         if self.loggingEnabled {
             os_log("[OTSubscriberDelegate] %@", type: .info, #function)
         }
-                
-        if (subscriber.stream?.hasVideo != nil) {
-            channel?.channelInvokeMethod("onSubscriberVideoStarted", arguments: nil)
-        }
 
-        if (subscriber.stream?.hasAudio != nil) {
-            channel?.channelInvokeMethod("onSubscriberAudioStarted", arguments: nil)
-        }
+        channel?.channelInvokeMethod("onSubscriberConnected", arguments: nil)
+        channel?.channelInvokeMethod("onSubscriberVideoStarted", arguments: nil)
+        channel?.channelInvokeMethod("onSubscriberAudioStarted", arguments: nil)
     }
     
     public func subscriber(_ subscriber: OTSubscriberKit, didFailWithError error: OTError) {
-        channel?.channelInvokeMethod("onSubscriberError", arguments: nil)
-        
         if self.loggingEnabled {
             os_log("[OTSubscriberDelegate] subscriber %@", type: .info, error)
         }
+        
+        channel?.channelInvokeMethod("onSubscriberError", arguments: error.description)
     }
     
     public func subscriberDidReconnect(toStream subscriber: OTSubscriberKit) {
-        channel?.channelInvokeMethod("onSubscriberReconnected", arguments: nil)
-        
         if self.loggingEnabled {
             os_log("[OTSubscriberDelegate] %@", type: .info, #function)
         }
+        
+        channel?.channelInvokeMethod("onSubscriberReconnected", arguments: nil)
     }
     
     public func subscriberVideoDisableWarning(_ subscriber: OTSubscriberKit) {
-        channel?.channelInvokeMethod("onSubscriberVideoDisableWarning", arguments: nil)
-        
         if self.loggingEnabled {
             os_log("[OTSubscriberDelegate] subscriberVideoDisableWarning %@", type: .info, #function)
         }
+        
+        channel?.channelInvokeMethod("onSubscriberVideoDisableWarning", arguments: nil)
     }
     
     public func subscriberDidDisconnect(fromStream subscriber: OTSubscriberKit) {
-        channel?.channelInvokeMethod("onSubscriberDisconnected", arguments: nil)
-        
         if self.loggingEnabled {
             os_log("[OTSubscriberDelegate] %@", type: .info, #function)
         }
+        
+        channel?.channelInvokeMethod("onSubscriberDisconnected", arguments: nil)
         
         unsubscribe()
     }
     
     public func subscriberVideoDisableWarningLifted(_ subscriber: OTSubscriberKit) {
-        channel?.channelInvokeMethod("onSubscriberVideoDisableWarningLifted", arguments: nil)
-        
         if self.loggingEnabled {
             os_log("[OTSubscriberDelegate] subscriberVideoDisableWarningLifted %@", type: .info, #function)
         }
+        
+        channel?.channelInvokeMethod("onSubscriberVideoDisableWarningLifted", arguments: nil)
     }
     
     public func subscriberVideoEnabled(_ subscriber: OTSubscriberKit, reason: OTSubscriberVideoEventReason) {
-        channel?.channelInvokeMethod("onSubscriberVideoEnabled", arguments: nil)
-        
         if self.loggingEnabled {
             os_log("[OTSubscriberDelegate] subscriberVideoEnabled %d", type: .info, reason.rawValue)
+        }
+        
+        channel?.channelInvokeMethod("onSubscriberVideoEnabled", arguments: reasonValueToString(reason: reason))
+        
+        if (reason != .qualityChanged) {
+            channel?.channelInvokeMethod("onSubscriberVideoStarted", arguments: nil)
         }
     }
     
     public func subscriberVideoDisabled(_ subscriber: OTSubscriberKit, reason: OTSubscriberVideoEventReason) {
-        channel?.channelInvokeMethod("onSubscriberVideoDisabled", arguments: nil)
-        
         if self.loggingEnabled {
             os_log("[OTSubscriberDelegate] subscriberVideoDisabled %d", type: .info, reason.rawValue)
+        }
+        
+        channel?.channelInvokeMethod("onSubscriberVideoDisabled", arguments: reasonValueToString(reason: reason))
+        
+        if (reason != .qualityChanged) {
+            channel?.channelInvokeMethod("onSubscriberVideoStopped", arguments: nil)
         }
     }
 }
