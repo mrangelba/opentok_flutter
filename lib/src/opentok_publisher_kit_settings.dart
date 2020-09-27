@@ -1,12 +1,14 @@
+import 'consts.dart';
 import 'enums.dart';
 
 /// OTPublisherKitSettings defines settings to be used when initializing a publisher.
 class PublisherKitSettings {
   const PublisherKitSettings({
     this.name,
+    this.audioBitrate,
+    this.audioFallback,
     this.audioTrack,
     this.videoTrack,
-    this.audioBitrate,
     this.cameraResolution,
     this.cameraFrameRate,
     this.styleVideoScale,
@@ -57,9 +59,12 @@ class PublisherKitSettings {
 
   final StyleVideoScale styleVideoScale;
 
+  final bool audioFallback;
+
   factory PublisherKitSettings.fromJson(Map<String, dynamic> json) =>
       PublisherKitSettings(
         audioBitrate: json['audioBitrate'],
+        audioFallback: json['audioFallback'],
         audioTrack: json['audioTrack'],
         cameraFrameRate: parseOTCameraCaptureFrameRate(json['cameraFrameRate']),
         cameraResolution:
@@ -70,13 +75,14 @@ class PublisherKitSettings {
       );
 
   Map<String, dynamic> toJson() => {
-        'audioTrack': audioTrack,
-        'audioBitrate': audioBitrate,
+        'audioBitrate': audioBitrate ?? OpenTokAudioBitrateDefault,
+        'audioFallback': audioFallback ?? true,
+        'audioTrack': audioTrack ?? true,
         'cameraFrameRate': serializeOTCameraCaptureFrameRate(cameraFrameRate),
         'cameraResolution':
             serializeOTCameraCaptureResolution(cameraResolution),
         'name': name,
-        'videoTrack': videoTrack,
+        'videoTrack': videoTrack ?? true,
         'styleVideoScale': serializeOTStyleVideoScale(styleVideoScale),
       };
 }

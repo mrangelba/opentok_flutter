@@ -10,4 +10,5 @@ data class PublisherSettings(
         var audioBitrate: Int?,
         var cameraResolution: String?,
         var cameraFrameRate: String?,
-        var styleVideoScale: String?)
+        var styleVideoScale: String?,
+        var audioFallback: Boolean?)

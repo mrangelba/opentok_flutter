@@ -82,44 +82,58 @@ public class MethodCallHandlerImpl{
             } catch {
                 result(false)
             }
-        } else if call.method == "enablePublisherVideo" {
+        } else if call.method == "publishVideo" {
             do {
-                try provider?.enablePublisherVideo()
+                try provider?.publishVideo()
                 result(true)
             } catch {
                 result(false)
             }
-        } else if call.method == "disablePublisherVideo" {
+        } else if call.method == "unpublishVideo" {
             do {
-                try provider?.disablePublisherVideo()
+                try provider?.unpublishVideo()
                 result(true)
             } catch {
                 result(false)
             }
-        } else if call.method == "unmutePublisherAudio" {
+        } else if call.method == "publishAudio" {
             do {
-                try provider?.unmutePublisherAudio()
+                try provider?.publishAudio()
                 result(true)
             } catch {
                 result(false)
             }
-        } else if call.method == "mutePublisherAudio" {
+        } else if call.method == "unpublishAudio" {
             do {
-                try provider?.mutePublisherAudio()
+                try provider?.unpublishAudio()
                 result(true)
             } catch {
                 result(false)
             }
-        } else if call.method == "muteSubscriberAudio" {
+        } else if call.method == "subscribeToAudio" {
             do {
-                try provider?.muteSubscriberAudio()
+                try provider?.subscribeToAudio()
                 result(true)
             } catch {
                 result(false)
             }
-        } else if call.method == "unmuteSubscriberAudio" {
+        } else if call.method == "unsubscribeToAudio" {
             do {
-                try provider?.unmuteSubscriberAudio()
+                try provider?.unsubscribeToAudio()
+                result(true)
+            } catch {
+                result(false)
+            }
+        } else if call.method == "subscribeToVideo" {
+            do {
+                try provider?.subscribeToVideo()
+                result(true)
+            } catch {
+                result(false)
+            }
+        } else if call.method == "unsubscribeToVideo" {
+            do {
+                try provider?.unsubscribeToVideo()
                 result(true)
             } catch {
                 result(false)

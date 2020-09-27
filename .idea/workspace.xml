@@ -4,7 +4,9 @@
     <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="af9c2e45-1cea-4a0a-9c07-f16c3f33c005" name="Default Changelist" comment="" />
+    <list default="true" id="af9c2e45-1cea-4a0a-9c07-f16c3f33c005" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/example/lib/settings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/settings.dart" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

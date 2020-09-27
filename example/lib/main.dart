@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:opentok_flutter/enums.dart';
 import 'dart:async';
 
 import 'package:opentok_flutter/opentok_flutter.dart';
@@ -51,6 +50,28 @@ class _MyAppState extends State<MyApp> {
       cameraFrameRate: CameraCaptureFrameRate.OTCameraCaptureFrameRate30FPS,
     );
 
+    // listeners
+    _controller.session.setConnectedListener(() => print('Session connected'));
+    _controller.session.setConnectionCreatedListener(
+        (connectionId) => print('Session connection created => $connectionId'));
+    _controller.session.setDisconnectedListener(() {});
+    _controller.session
+        .setErrorListener((error) => print('Session error => $error'));
+    _controller.session
+        .setReconnectedListener(() => print('Session reconnected'));
+    _controller.session
+        .setReconnectingListener(() => print('Session reconnecting'));
+    _controller.session
+        .setStreamDroppedListener(() => print('Session stream dropped'));
+    _controller.session
+        .setStreamReceivedListener(() => print('Session stream received'));
+    _controller.session.setConnectionDestroyedListener((connectionId) =>
+        print('Session connection destroyed => $connectionId'));
+    _controller.session
+        .setVideoReceivedListener(() => print('Session video received'));
+    _controller.subscriber.setVideoDisabledListener(
+        (reason) => print('Subscriber video disable => $reason'));
+
     _controller.addListener(() {
       setState(() {});
     });
@@ -67,22 +88,22 @@ class _MyAppState extends State<MyApp> {
 
   void _togglePublisherVideo() async {
     if (_controller.value.isPublisherVideoEnabled) {
-      await _controller?.disablePublisherVideo();
+      await _controller?.publisher?.disableVideo();
     } else {
-      await _controller?.enablePublisherVideo();
+      await _controller?.publisher?.enableVideo();
     }
   }
 
   void _onToggleMute() async {
     if (_controller.value.isPublisherAudioEnabled) {
-      await _controller?.mutePublisherAudio();
+      await _controller?.publisher?.disableAudio();
     } else {
-      await _controller?.unmutePublisherAudio();
+      await _controller?.publisher?.enableAudio();
     }
   }
 
   void _onSwitchCamera() async {
-    await _controller?.switchCamera();
+    await _controller?.publisher?.switchCamera();
   }
 
   Widget _toolbar() {
@@ -163,8 +184,46 @@ class _MyAppState extends State<MyApp> {
                   _controller.value.isPublisherVideoEnabled
                       ? Flexible(
                           child: Container(
-                              color: Colors.white,
-                              child: PublisherView(controller: _controller)),
+                            color: Colors.white,
+                            child: Stack(
+                              children: [
+                                PublisherView(controller: _controller),
+                                StreamBuilder<bool>(
+                                  stream: _controller
+                                      .publisher.videoDisabledQuality,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData && snapshot.data) {
+                                      return Positioned(
+                                        top: 32,
+                                        right: 16,
+                                        child: Icon(
+                                          Icons.signal_cellular_off,
+                                          color: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                    return SizedBox.shrink();
+                                  },
+                                ),
+                                StreamBuilder<double>(
+                                  stream: _controller.publisher.videoBandwidth,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      return Positioned(
+                                        top: 64,
+                                        right: 16,
+                                        child: Text(
+                                          snapshot.data.toString(),
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      );
+                                    }
+                                    return SizedBox.shrink();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
                           flex: 1,
                         )
                       : SizedBox.shrink(),

@@ -11,8 +11,9 @@ struct PublisherSettings: Codable {
     var name: String?
     var audioTrack: Bool?
     var videoTrack: Bool?
-    var audioBitrate: Int?
+    var audioBitrate: Int32?
     var cameraResolution: OTCameraCaptureResolution?
     var cameraFrameRate: OTCameraCaptureFrameRate?
     var styleVideoScale: String?
+    var audioFallback: Bool?
 }
