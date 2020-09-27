@@ -27,7 +27,7 @@ public class VoIPProvider: NSObject {
     fileprivate var prevVideoPacketsSent: Int64 = 0
     fileprivate var prevVideoTimestamp: Double = 0.0
     fileprivate var prevVideoBytes: Int64 = 0
-    fileprivate var videoPLRatio: Int64 = 0
+    fileprivate var videoPLRatio: Double = 0.0
     fileprivate var videoBandwidth: Double = 0.0
     fileprivate var publisherAudioOnly = false
     fileprivate var publisherVideoQualityWarning = false
@@ -459,9 +459,9 @@ extension VoIPProvider: OTPublisherKitNetworkStatsDelegate {
         if (videoTimestamp - self.prevVideoTimestamp >= self.timeWindow) {
             //calculate video packets lost ratio
             if (self.prevVideoPacketsSent != 0) {
-                let pl: Int64 = stats.videoPacketsLost - self.prevVideoPacketsLost
-                let pr: Int64 = stats.videoPacketsSent - self.prevVideoPacketsSent
-                let pt: Int64 = pl + pr
+                let pl: Double = Double(stats.videoPacketsLost - self.prevVideoPacketsLost)
+                let pr: Double = Double(stats.videoPacketsSent - self.prevVideoPacketsSent)
+                let pt: Double = pl + pr
 
                 if (pt > 0) {
                     self.videoPLRatio = (pl / pt)
@@ -480,14 +480,41 @@ extension VoIPProvider: OTPublisherKitNetworkStatsDelegate {
                 os_log("[OTPublisherDelegate] Video bandwidth (bps): %f", type: .info, self.videoBandwidth.rounded())
                 os_log("[OTPublisherDelegate] Video Bytes Sent: %d", type: .info, stats.videoPacketsSent)
                 os_log("[OTPublisherDelegate] Video packet lost: %d", type: .info, stats.videoPacketsLost)
-                os_log("[OTPublisherDelegate] Video packet loss ratio: %d", type: .info, self.videoPLRatio)
+                os_log("[OTPublisherDelegate] Video packet loss ratio: %f", type: .info, self.videoPLRatio)
             }
 
             channel?.channelInvokeMethod("onPublisherVideoBandwidth", arguments: self.videoBandwidth.rounded() )
 
             //check quality of the video call after timeVideoTest seconds
             if ((Date().timeIntervalSince1970 - startTestTime) > self.timeVideoTest) {
-            //    checkVideoQuality();
+                checkVideoQuality();
+            }
+        }
+    }
+    
+    private func checkVideoQuality() {
+        if (self.providerSession != nil) {
+            if (self.videoPLRatio >= 0.15) {
+                if (!self.publisherAudioOnly) {
+                    self.publisherAudioOnly = true
+                    self.publisherVideoQualityWarning = false
+                    channel?.channelInvokeMethod("onPublisherVideoDisabled", arguments: "quality")
+                }
+            } else if (self.videoBandwidth < 350.0 || self.videoPLRatio > 0.03) {
+                if (!self.publisherAudioOnly && !self.publisherVideoQualityWarning) {
+                    publisherVideoQualityWarning = true
+                    channel?.channelInvokeMethod("onPublisherVideoDisableWarning", arguments: nil)
+                }
+            } else {
+                if (self.publisherVideoQualityWarning) {
+                    self.publisherVideoQualityWarning = false
+                    channel?.channelInvokeMethod("onPublisherVideoDisableWarningLifted", arguments: nil)
+                }
+
+                if (self.publisherAudioOnly) {
+                    self.publisherAudioOnly = false
+                    channel?.channelInvokeMethod("onPublisherVideoEnabled", arguments: "quality")
+                }
             }
         }
     }

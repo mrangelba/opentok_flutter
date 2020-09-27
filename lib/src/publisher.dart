@@ -88,7 +88,7 @@ class Publisher {
 
   void onVideoBandwidth(double bandwidth) {
     if (!_videoBandwidthController.isClosed) {
-      _videoBandwidthController.add(bandwidth);
+      _videoBandwidthController.add(bandwidth.abs());
     }
 
     if (_onVideoBandwidth != null) {
